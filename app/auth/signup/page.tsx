@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
 
 type UserType = "creator" | "viewer" | null
 
@@ -24,6 +25,9 @@ export default function SignUpPage() {
     confirmPassword: "",
     agreeToTerms: false,
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -33,10 +37,44 @@ export default function SignUpPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log("Form submitted:", { ...formData, userType })
+    setError(null)
+    setSuccess(false)
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
+          role: userType === "creator" ? "CREATOR" : "VIEWER",
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || "Registration failed")
+        setLoading(false)
+        return
+      }
+      // Succès : connexion automatique
+      setSuccess(true)
+      await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        callbackUrl: "/profile", // Redirige vers le profil après connexion
+      })
+    } catch (err) {
+      setError("Server error")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -351,8 +389,20 @@ export default function SignUpPage() {
                         </Label>
                       </div>
 
-                      <AnimatedButton type="submit" variant="primary" size="lg" className="w-full">
-                        Create Account
+                      {/* Affichage des erreurs ou succès */}
+                      {error && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-red-500 text-center">
+                          {error}
+                        </motion.div>
+                      )}
+                      {success && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-green-500 text-center">
+                          Account created! Redirecting...
+                        </motion.div>
+                      )}
+
+                      <AnimatedButton type="submit" variant="primary" size="lg" className="w-full" disabled={loading}>
+                        {loading ? "Creating..." : "Create Account"}
                       </AnimatedButton>
                     </form>
                   </motion.div>

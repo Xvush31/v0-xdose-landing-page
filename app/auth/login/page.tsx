@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -18,6 +19,8 @@ export default function LoginPage() {
     password: "",
     rememberMe: false,
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -27,10 +30,27 @@ export default function LoginPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log("Login submitted:", formData)
+    setError(null)
+    setLoading(true)
+    try {
+      const res = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+        callbackUrl: "/profile",
+      })
+      if (res?.error) {
+        setError("Invalid email or password")
+      } else if (res?.ok) {
+        window.location.href = res.url || "/profile"
+      }
+    } catch (err) {
+      setError("Server error")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -148,6 +168,13 @@ export default function LoginPage() {
               <p className="text-muted-foreground">Sign in to your Xdose account</p>
             </motion.div>
 
+            {/* Affichage des erreurs */}
+            {error && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-red-500 text-center">
+                {error}
+              </motion.div>
+            )}
+
             <motion.form
               onSubmit={handleSubmit}
               className="space-y-6"
@@ -221,8 +248,8 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <AnimatedButton type="submit" variant="primary" size="lg" className="w-full">
-                Sign In
+              <AnimatedButton type="submit" variant="primary" size="lg" className="w-full" disabled={loading}>
+                {loading ? "Signing in..." : "Sign In"}
               </AnimatedButton>
             </motion.form>
 
