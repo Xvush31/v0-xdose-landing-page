@@ -39,4 +39,4 @@
 
 ## 7. Automatisation des tâches
 - [ ] Générer un `justfile` ou `Taskfile.yml` structuré
-- [ ] Ajouter les commandes : `just dev`, `just test`, `just lint`, `just format`, `just deploy` 
+- [ ] Ajouter les commandes : `just dev`, `just test`, `just lint`, `just format`, `just deploy`
