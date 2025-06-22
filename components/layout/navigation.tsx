@@ -121,9 +121,11 @@ export function Navigation() {
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </motion.button>
 
-          <AnimatedButton variant="primary" size="sm">
-            Sign Up
-          </AnimatedButton>
+          <Link href="/auth/signup">
+            <AnimatedButton variant="primary" size="sm">
+              Sign Up
+            </AnimatedButton>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -169,9 +171,11 @@ export function Navigation() {
                 <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
               </motion.button>
 
-              <AnimatedButton variant="primary" size="sm" className="w-full">
-                Sign Up
-              </AnimatedButton>
+              <Link href="/auth/signup" className="w-full">
+                <AnimatedButton variant="primary" size="sm" className="w-full">
+                  Sign Up
+                </AnimatedButton>
+              </Link>
             </div>
           </motion.div>
         )}

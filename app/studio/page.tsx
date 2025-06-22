@@ -2,13 +2,38 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Upload, Video, ImageIcon, Settings, BarChart3, DollarSign, Users } from "lucide-react"
 import { Navigation } from "@/components/layout/navigation"
 import { AnimatedButton } from "@/components/ui/animated-button"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+
+type SessionUser = {
+  name?: string | null
+  email?: string | null
+  image?: string | null
+  role?: string
+}
 
 export default function StudioPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === "loading") return
+    const user = session?.user as SessionUser | undefined
+    if (!session || !user || user.role !== "CREATOR") {
+      router.replace("/")
+    }
+  }, [session, status, router])
+
+  const user = session?.user as SessionUser | undefined
+  if (status === "loading" || !session || !user || user.role !== "CREATOR") {
+    return null
+  }
+
   const [dragActive, setDragActive] = useState(false)
 
   const handleDrag = (e: React.DragEvent) => {
