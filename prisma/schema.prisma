@@ -19,6 +19,12 @@ enum Role {
   ADMIN
 }
 
+enum VideoStatus {
+  pending
+  ready
+  errored
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String?
@@ -31,6 +37,7 @@ model User {
   sessions  Session[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  videos    Video[]
 }
 
 model Account {
@@ -65,4 +72,16 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Video {
+  id         String   @id @default(cuid())
+  userId     String
+  muxAssetId String   // ID Mux pour retrouver la vidéo
+  title      String
+  status     VideoStatus @default(pending)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id])
 }

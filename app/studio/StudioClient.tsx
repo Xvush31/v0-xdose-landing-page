@@ -39,6 +39,12 @@ export default function StudioClient() {
   }
 
   const [dragActive, setDragActive] = useState(false)
+  const [title, setTitle] = useState("")
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -54,7 +60,63 @@ export default function StudioClient() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    // Handle file upload logic here
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setFile(e.dataTransfer.files[0])
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0])
+    }
+  }
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setUploadError(null)
+    setUploadSuccess(false)
+    setUploadProgress(null)
+    if (!title || !file) {
+      setUploadError("Veuillez renseigner un titre et choisir un fichier vidéo.")
+      return
+    }
+    setUploading(true)
+    try {
+      // 1. Appel API pour obtenir l'uploadUrl Mux
+      const res = await fetch("/api/videos/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        setUploadError(err.error || "Erreur lors de la création de l'upload Mux.")
+        setUploading(false)
+        return
+      }
+      const { uploadUrl } = await res.json()
+      // 2. Upload direct du fichier à Mux
+      const muxRes = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      })
+      if (!muxRes.ok) {
+        const errText = await muxRes.text();
+        setUploadError("Erreur lors de l'upload du fichier vidéo vers Mux: " + errText);
+        setUploading(false);
+        return;
+      }
+      setUploadSuccess(true)
+      setTitle("")
+      setFile(null)
+    } catch (err: any) {
+      setUploadError(err.message || "Erreur inconnue lors de l'upload.")
+    } finally {
+      setUploading(false)
+    }
   }
 
   const stats = [
@@ -107,70 +169,91 @@ export default function StudioClient() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Upload Section */}
-            <MotionDiv
-              className="space-y-6"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <h2 className="text-2xl font-bold flex items-center space-x-2">
-                <Upload className="text-purple-400" size={24} />
-                <span>Nouveau contenu</span>
-              </h2>
-
-              {/* Drag & Drop Upload */}
+            {user.role === "CREATOR" && (
               <MotionDiv
-                className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 ${
-                  dragActive ? "border-purple-400 bg-purple-400/10" : "border-gray-600 hover:border-gray-500"
-                }`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                whileHover={{ scale: 1.02 }}
+                className="space-y-6"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
               >
-                <MotionDiv
-                  className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full flex items-center justify-center"
-                  animate={{
-                    scale: dragActive ? [1, 1.1, 1] : 1,
-                    rotate: dragActive ? [0, 5, -5, 0] : 0,
-                  }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Video className="w-8 h-8 text-purple-400" />
-                </MotionDiv>
+                <h2 className="text-2xl font-bold flex items-center space-x-2">
+                  <Upload className="text-purple-400" size={24} />
+                  <span>Nouveau contenu</span>
+                </h2>
+                <form onSubmit={handleUpload} className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Titre de la vidéo"
+                    className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    disabled={uploading}
+                  />
+                  <div
+                    className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 ${
+                      dragActive ? "border-purple-400 bg-purple-400/10" : "border-gray-600 hover:border-gray-500"
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                  >
+                    <MotionDiv
+                      className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full flex items-center justify-center"
+                      animate={{
+                        scale: dragActive ? [1, 1.1, 1] : 1,
+                        rotate: dragActive ? [0, 5, -5, 0] : 0,
+                      }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <Video className="w-8 h-8 text-purple-400" />
+                    </MotionDiv>
+                    <h3 className="text-xl font-semibold mb-2">
+                      {dragActive ? "Déposez vos fichiers ici" : file ? file.name : "Glissez-déposez vos vidéos"}
+                    </h3>
+                    <p className="text-gray-400 mb-4">Formats supportés: MP4, MOV, AVI (max 2GB)</p>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      id="video-upload-input"
+                      onChange={handleFileChange}
+                      disabled={uploading}
+                    />
+                    <label htmlFor="video-upload-input">
+                      <AnimatedButton variant="secondary" size="md" as="span">
+                        Choisir des fichiers
+                      </AnimatedButton>
+                    </label>
+                  </div>
+                  {uploadError && <div className="text-red-500 text-sm">{uploadError}</div>}
+                  {uploadSuccess && <div className="text-green-500 text-sm">Vidéo uploadée avec succès !</div>}
+                  <AnimatedButton type="submit" variant="primary" size="lg" disabled={uploading}>
+                    {uploading ? "Upload en cours..." : "Uploader la vidéo"}
+                  </AnimatedButton>
+                </form>
+                {/* Upload Options */}
+                <div className="grid grid-cols-2 gap-4">
+                  <MotionButton
+                    className="p-4 bg-gray-900 rounded-xl border border-gray-800 hover:border-purple-400 transition-colors text-left"
+                    whileHover={{ y: -2 }}
+                  >
+                    <Video className="w-6 h-6 text-purple-400 mb-2" />
+                    <h3 className="font-semibold mb-1">Vidéo standard</h3>
+                    <p className="text-sm text-gray-400">Upload classique</p>
+                  </MotionButton>
 
-                <h3 className="text-xl font-semibold mb-2">
-                  {dragActive ? "Déposez vos fichiers ici" : "Glissez-déposez vos vidéos"}
-                </h3>
-                <p className="text-gray-400 mb-4">Formats supportés: MP4, MOV, AVI (max 2GB)</p>
-
-                <AnimatedButton variant="secondary" size="md">
-                  Choisir des fichiers
-                </AnimatedButton>
+                  <MotionButton
+                    className="p-4 bg-gray-900 rounded-xl border border-gray-800 hover:border-pink-400 transition-colors text-left"
+                    whileHover={{ y: -2 }}
+                  >
+                    <ImageIcon className="w-6 h-6 text-pink-400 mb-2" />
+                    <h3 className="font-semibold mb-1">Photos/GIFs</h3>
+                    <p className="text-sm text-gray-400">Contenu image</p>
+                  </MotionButton>
+                </div>
               </MotionDiv>
-
-              {/* Upload Options */}
-              <div className="grid grid-cols-2 gap-4">
-                <MotionButton
-                  className="p-4 bg-gray-900 rounded-xl border border-gray-800 hover:border-purple-400 transition-colors text-left"
-                  whileHover={{ y: -2 }}
-                >
-                  <Video className="w-6 h-6 text-purple-400 mb-2" />
-                  <h3 className="font-semibold mb-1">Vidéo standard</h3>
-                  <p className="text-sm text-gray-400">Upload classique</p>
-                </MotionButton>
-
-                <MotionButton
-                  className="p-4 bg-gray-900 rounded-xl border border-gray-800 hover:border-pink-400 transition-colors text-left"
-                  whileHover={{ y: -2 }}
-                >
-                  <ImageIcon className="w-6 h-6 text-pink-400 mb-2" />
-                  <h3 className="font-semibold mb-1">Photos/GIFs</h3>
-                  <p className="text-sm text-gray-400">Contenu image</p>
-                </MotionButton>
-              </div>
-            </MotionDiv>
+            )}
 
             {/* Management Section */}
             <MotionDiv
