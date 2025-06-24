@@ -1,79 +1,98 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
-import crypto from "crypto";
 import { VideoStatus } from "@prisma/client";
+import crypto from "crypto";
+// @ts-ignore
+import getRawBody from "raw-body";
 
 const MUX_WEBHOOK_SECRET = process.env.MUX_WEBHOOK_SECRET!;
 
 export const config = {
   api: {
-    bodyParser: false, // Important : on veut le body RAW
+    bodyParser: false,
   },
 };
 
 function verifyMuxSignature(header: string, body: string, secret: string): boolean {
-  // Mux envoie souvent: v1=xxxxxxx[,v2=yyyyy]
-  const match = header.match(/v1=([a-f0-9]+)/);
-  if (!match) return false;
-  const receivedSignature = match[1];
-  const expected = crypto
+  // Mux envoie: t=<timestamp>,v1=<signature>
+  const timestampMatch = header.match(/t=([^,]+)/);
+  const signatureMatch = header.match(/v1=([a-f0-9]+)/);
+
+  if (!timestampMatch || !signatureMatch) {
+    return false;
+  }
+
+  const timestamp = timestampMatch[1];
+  const receivedSignature = signatureMatch[1];
+  const signedPayload = `${timestamp}.${body}`;
+
+  const expectedSignature = crypto
     .createHmac('sha256', secret)
-    .update(body)
+    .update(signedPayload)
     .digest('hex');
+
   // Comparaison sécurisée
-  return crypto.timingSafeEqual(Buffer.from(receivedSignature, 'utf8'), Buffer.from(expected, 'utf8'));
+  const receivedBuf = Buffer.from(receivedSignature, 'hex');
+  const expectedBuf = Buffer.from(expectedSignature, 'hex');
+
+  if (receivedBuf.length !== expectedBuf.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(receivedBuf, expectedBuf);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log("Webhook Mux reçu avec méthode :", req.method);
   if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  let rawBody = "";
-  req.on("data", (chunk) => {
-    rawBody += chunk;
+  const signature = req.headers["mux-signature"] as string;
+  const body = await getRawBody(req, {
+    length: req.headers["content-length"],
+    limit: "1mb",
+    encoding: "utf-8",
   });
 
-  req.on("end", async () => {
-    const signature = req.headers["mux-signature"] as string | undefined;
+  if (!signature || !verifyMuxSignature(signature, body, MUX_WEBHOOK_SECRET)) {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
 
-    // Logging debug
-    console.log("[MUX WEBHOOK] Signature reçue:", signature);
-    console.log("[MUX WEBHOOK] Body:", rawBody);
-    console.log("[MUX WEBHOOK] Secret utilisé:", MUX_WEBHOOK_SECRET);
+  const event = JSON.parse(body.toString());
+  const { type, data } = event;
+  const assetId = data?.id || data?.asset_id;
+  const uploadId = data?.upload_id;
 
-    if (!signature || !verifyMuxSignature(signature, rawBody, MUX_WEBHOOK_SECRET)) {
-      console.error("[MUX WEBHOOK] Signature invalide !");
-      return res.status(401).json({ error: "Invalid signature" });
-    }
+  if (!assetId) {
+    return res.status(400).json({ error: "Missing asset id" });
+  }
 
-    let event;
-    try {
-      event = JSON.parse(rawBody);
-    } catch (err) {
-      return res.status(400).json({ error: "Invalid JSON" });
-    }
+  let status: VideoStatus | undefined;
+  if (type === "video.asset.created") status = VideoStatus.pending;
+  if (type === "video.asset.ready") status = VideoStatus.ready;
+  if (type === "video.asset.errored") status = VideoStatus.errored;
+  if (type === "video.upload.asset_created") status = VideoStatus.pending;
 
-    const type = event.type;
-    const assetId = event.data?.id || event.data?.asset_id;
-
-    if (!assetId) {
-      return res.status(400).json({ error: "Missing asset id" });
-    }
-
-    let status: VideoStatus | undefined;
-    if (type === "video.asset.created") status = VideoStatus.pending;
-    if (type === "video.asset.ready") status = VideoStatus.ready;
-    if (type === "video.asset.errored") status = VideoStatus.errored;
-
-    if (status) {
+  if (status) {
+    if (uploadId) {
+      // Premier event : on fait le lien via l'uploadId et on renseigne muxAssetId
+      await prisma.video.updateMany({
+        where: { muxUploadId: uploadId },
+        data: { muxAssetId: assetId, status },
+      });
+      console.log(`[MUX WEBHOOK] (uploadId) Asset ${assetId} mis à jour avec le statut: ${status}`);
+    } else {
+      // Events suivants : on fait le lien via muxAssetId
       await prisma.video.updateMany({
         where: { muxAssetId: assetId },
         data: { status },
       });
+      console.log(`[MUX WEBHOOK] (assetId) Asset ${assetId} mis à jour avec le statut: ${status}`);
     }
+  } else {
+    console.log(`[MUX WEBHOOK] Événement non géré: ${type}`);
+  }
 
-    return res.status(200).json({ received: true });
-  });
+  return res.status(200).json({ received: true });
 } 

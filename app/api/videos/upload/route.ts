@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   const video = await prisma.video.create({
     data: {
       userId: user.id,
-      muxAssetId: muxUploadId,
+      muxUploadId,
       title,
       status: "pending",
     },
