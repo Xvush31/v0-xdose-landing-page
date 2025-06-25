@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Search, Filter, TrendingUp, Clock, Heart } from "lucide-react"
 import { Navigation } from "@/components/layout/navigation"
 import { ThemeProvider } from "@/components/theme-provider"
+import { VideoPlayer } from "@/components/ui/VideoPlayer"
+import Link from "next/link"
 
 const categories = ["Trending", "New", "Top Creators", "Live", "Premium", "Amateur", "Professional"]
 
@@ -29,30 +31,37 @@ const trendingCreators = [
   },
 ]
 
-const trendingVideos = [
-  {
-    id: "1",
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    title: "Exclusive session",
-    creator: "Luna Rose",
-    views: "45K",
-    duration: "15:30",
-    isHot: true,
-  },
-  {
-    id: "2",
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    title: "New series",
-    creator: "Scarlett Divine",
-    views: "32K",
-    duration: "12:45",
-    isHot: false,
-  },
-]
-
 export default function DiscoverPage() {
   const [selectedCategory, setSelectedCategory] = useState("Trending")
   const [searchQuery, setSearchQuery] = useState("")
+  const [videos, setVideos] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [creators, setCreators] = useState<any[]>([])
+
+  useEffect(() => {
+    setLoading(true)
+    fetch("/api/videos")
+      .then(res => res.json())
+      .then(data => {
+        if (data.videos) {
+          setVideos(data.videos)
+        } else {
+          setError("Erreur lors de la récupération des vidéos")
+        }
+        setLoading(false)
+      })
+      .catch(() => {
+        setError("Erreur lors de la récupération des vidéos")
+        setLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/users/creators")
+      .then(res => res.json())
+      .then(data => setCreators(data.creators || []))
+  }, [])
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
@@ -136,38 +145,35 @@ export default function DiscoverPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {trendingVideos.map((video, index) => (
-                      <motion.div
-                        key={video.id}
-                        className="group cursor-pointer"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 + index * 0.1 }}
-                        whileHover={{ y: -5 }}
-                      >
-                        <div className="relative overflow-hidden rounded-xl mb-3">
-                          <img
-                            src={video.thumbnail || "/placeholder.svg"}
-                            alt={video.title}
-                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          {video.isHot && (
-                            <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                              🔥 HOT
+                    {loading ? (
+                      <div className="col-span-2 text-center py-12">Chargement...</div>
+                    ) : error ? (
+                      <div className="col-span-2 text-center text-red-500 py-12">{error}</div>
+                    ) : (
+                      videos.map((video, index) => (
+                        <motion.div
+                          key={video.id}
+                          className="group cursor-pointer"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 + index * 0.1 }}
+                          whileHover={{ y: -5 }}
+                        >
+                          <div className="relative w-full h-48">
+                            <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} />
+                            <div className="absolute bottom-3 right-3 bg-black/70 px-2 py-1 rounded text-sm text-white">
+                              --:--
                             </div>
-                          )}
-                          <div className="absolute bottom-3 right-3 bg-black/70 px-2 py-1 rounded text-sm text-white">
-                            {video.duration}
                           </div>
-                        </div>
-                        <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition-colors text-foreground">
-                          {video.title}
-                        </h3>
-                        <p className="text-muted-foreground text-sm">
-                          {video.creator} • {video.views} views
-                        </p>
-                      </motion.div>
-                    ))}
+                          <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition-colors text-foreground">
+                            {video.title}
+                          </h3>
+                          <p className="text-muted-foreground text-sm">
+                            {video.user?.name || "Unknown"}
+                          </p>
+                        </motion.div>
+                      ))
+                    )}
                   </div>
                 </motion.div>
               </div>
@@ -182,7 +188,7 @@ export default function DiscoverPage() {
                   </div>
 
                   <div className="space-y-4">
-                    {trendingCreators.map((creator, index) => (
+                    {creators.map((creator, index) => (
                       <motion.div
                         key={creator.id}
                         className="flex items-center space-x-3 p-4 bg-card rounded-xl hover:bg-accent transition-colors cursor-pointer border border-border"
@@ -192,24 +198,16 @@ export default function DiscoverPage() {
                         whileHover={{ scale: 1.02 }}
                       >
                         <img
-                          src={creator.avatar || "/placeholder.svg"}
+                          src={creator.image || "/placeholder.svg"}
                           alt={creator.name}
                           className="w-12 h-12 rounded-full object-cover"
                         />
                         <div className="flex-1">
                           <div className="flex items-center space-x-1">
                             <h3 className="font-semibold text-foreground">{creator.name}</h3>
-                            {creator.verified && (
-                              <div className="w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
-                                <span className="text-xs text-white">✓</span>
-                              </div>
-                            )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{creator.followers} followers</p>
                         </div>
-                        <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full">
-                          {creator.category}
-                        </span>
+                        <Link href={`/profile/${creator.id}`} className="text-purple-400 hover:underline text-sm font-medium">Voir le profil</Link>
                       </motion.div>
                     ))}
                   </div>

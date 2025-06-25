@@ -1,68 +1,68 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Share, MoreHorizontal, Play, Heart, Calendar, MapPin, LinkIcon } from "lucide-react"
 import { Navigation } from "@/components/layout/navigation"
 import { AnimatedButton } from "@/components/ui/animated-button"
+import { VideoPlayer } from "@/components/ui/VideoPlayer"
+import { useSession } from "next-auth/react"
 
-const profileData = {
-  name: "Luna Rose",
-  username: "@lunarose",
-  avatar: "/placeholder.svg?height=120&width=120",
-  cover: "/placeholder.svg?height=300&width=800",
-  verified: true,
-  bio: "Créatrice de contenu premium 🔥 | Nouvelle vidéo chaque semaine | DM pour collaborations",
-  location: "Paris, France",
-  website: "lunarose.com",
-  joinDate: "Janvier 2023",
-  stats: {
-    followers: "125K",
-    following: "892",
-    likes: "2.1M",
-    videos: "156",
-  },
-}
-
-const userVideos = [
-  {
-    id: "1",
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    title: "Session exclusive premium",
-    views: "45K",
-    likes: "2.1K",
-    duration: "15:30",
-    isPrivate: false,
-  },
-  {
-    id: "2",
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    title: "Behind the scenes",
-    views: "32K",
-    likes: "1.8K",
-    duration: "8:45",
-    isPrivate: false,
-  },
-  {
-    id: "3",
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    title: "Contenu privé VIP",
-    views: "18K",
-    likes: "956",
-    duration: "12:20",
-    isPrivate: true,
-  },
-]
+type SessionUser = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+};
 
 export default function ProfilePage() {
+  const { data: session, status } = useSession()
+  const user = session?.user as SessionUser | undefined
+  const [profile, setProfile] = useState<any>(null)
+  const [videos, setVideos] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("videos")
 
   const tabs = [
-    { id: "videos", label: "Vidéos", count: profileData.stats.videos },
+    { id: "videos", label: "Vidéos", count: profile?.stats?.videos || "0" },
     { id: "photos", label: "Photos", count: "89" },
     { id: "live", label: "Lives", count: "12" },
     { id: "about", label: "À propos", count: "" },
   ]
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (!user?.id) {
+      setError("Utilisateur non connecté")
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    fetch(`/api/users/${user.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setProfile(data.user)
+          setVideos(data.user.videos || [])
+        } else {
+          setError(typeof data.error === "string" ? data.error : "Erreur lors de la récupération du profil")
+        }
+        setLoading(false)
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "Erreur lors de la récupération du profil")
+        setLoading(false)
+      })
+  }, [user, status])
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-white">Chargement...</div>
+  }
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -78,7 +78,7 @@ export default function ProfilePage() {
             animate={{ opacity: 1 }}
           >
             <img
-              src={profileData.cover || "/placeholder.svg"}
+              src={profile?.cover || "/placeholder.svg"}
               alt="Cover"
               className="w-full h-full object-cover opacity-60"
             />
@@ -101,11 +101,11 @@ export default function ProfilePage() {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <img
-                    src={profileData.avatar || "/placeholder.svg"}
-                    alt={profileData.name}
+                    src={profile?.avatar || "/placeholder.svg"}
+                    alt={profile?.name}
                     className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-black object-cover"
                   />
-                  {profileData.verified && (
+                  {profile?.verified && (
                     <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center border-2 border-black">
                       <span className="text-white text-sm">✓</span>
                     </div>
@@ -116,8 +116,8 @@ export default function ProfilePage() {
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
-                      <h1 className="text-3xl md:text-4xl font-bold mb-2">{profileData.name}</h1>
-                      <p className="text-gray-400 text-lg mb-4">{profileData.username}</p>
+                      <h1 className="text-3xl md:text-4xl font-bold mb-2">{profile?.name}</h1>
+                      <p className="text-gray-400 text-lg mb-4">{profile?.username}</p>
                     </div>
 
                     {/* Action Buttons */}
@@ -151,22 +151,22 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <p className="text-gray-300 max-w-2xl">{profileData.bio}</p>
+                <p className="text-gray-300 max-w-2xl">{profile?.bio}</p>
 
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
                   <div className="flex items-center space-x-1">
                     <MapPin size={16} />
-                    <span>{profileData.location}</span>
+                    <span>{profile?.location}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <LinkIcon size={16} />
-                    <a href={`https://${profileData.website}`} className="text-purple-400 hover:text-purple-300">
-                      {profileData.website}
+                    <a href={`https://${profile?.website}`} className="text-purple-400 hover:text-purple-300">
+                      {profile?.website}
                     </a>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Calendar size={16} />
-                    <span>Rejoint en {profileData.joinDate}</span>
+                    <span>Rejoint en {profile?.joinDate}</span>
                   </div>
                 </div>
               </motion.div>
@@ -178,7 +178,7 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
               >
-                {Object.entries(profileData.stats).map(([key, value]) => (
+                {Object.entries(profile?.stats || {}).map(([key, value]) => (
                   <motion.div key={key} className="text-center" whileHover={{ scale: 1.05 }}>
                     <div className="text-2xl font-bold">{value}</div>
                     <div className="text-gray-400 text-sm capitalize">{key}</div>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
           >
-            {userVideos.map((video, index) => (
+            {videos.map((video, index) => (
               <motion.div
                 key={video.id}
                 className="group cursor-pointer"
@@ -233,11 +233,7 @@ export default function ProfilePage() {
                 whileHover={{ y: -5 }}
               >
                 <div className="relative overflow-hidden rounded-xl mb-3">
-                  <img
-                    src={video.thumbnail || "/placeholder.svg"}
-                    alt={video.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} />
 
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">

@@ -79,7 +79,9 @@ model Video {
   userId       String
   muxUploadId  String   @unique // ID d'upload Mux (pour faire le lien lors du webhook)
   muxAssetId   String?  // ID de l'asset Mux (renseigné après le webhook)
+  playbackId   String?  // ID de playback Mux (pour le player)
   title        String
+  thumbnail    String?  // URL de la miniature
   status       VideoStatus @default(pending)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

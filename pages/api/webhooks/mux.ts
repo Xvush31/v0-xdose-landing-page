@@ -63,6 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { type, data } = event;
   const assetId = data?.id || data?.asset_id;
   const uploadId = data?.upload_id;
+  const playbackId = Array.isArray(data?.playback_ids) && data.playback_ids.length > 0 ? data.playback_ids[0].id : undefined;
 
   if (!assetId) {
     return res.status(400).json({ error: "Missing asset id" });
@@ -76,19 +77,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (status) {
     if (uploadId) {
-      // Premier event : on fait le lien via l'uploadId et on renseigne muxAssetId
+      // Premier event : on fait le lien via l'uploadId et on renseigne muxAssetId et playbackId
       await prisma.video.updateMany({
         where: { muxUploadId: uploadId },
-        data: { muxAssetId: assetId, status },
+        data: { muxAssetId: assetId, status, ...(playbackId && { playbackId }) },
       });
-      console.log(`[MUX WEBHOOK] (uploadId) Asset ${assetId} mis à jour avec le statut: ${status}`);
+      console.log(`[MUX WEBHOOK] (uploadId) Asset ${assetId} mis à jour avec le statut: ${status} et playbackId: ${playbackId}`);
     } else {
       // Events suivants : on fait le lien via muxAssetId
       await prisma.video.updateMany({
         where: { muxAssetId: assetId },
-        data: { status },
+        data: { status, ...(playbackId && { playbackId }) },
       });
-      console.log(`[MUX WEBHOOK] (assetId) Asset ${assetId} mis à jour avec le statut: ${status}`);
+      console.log(`[MUX WEBHOOK] (assetId) Asset ${assetId} mis à jour avec le statut: ${status} et playbackId: ${playbackId}`);
     }
   } else {
     console.log(`[MUX WEBHOOK] Événement non géré: ${type}`);
