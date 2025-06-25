@@ -8,12 +8,14 @@ import { useScrollTrigger } from "@/hooks/use-scroll-trigger"
 import { AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { theme, setTheme } = useTheme()
   const { scrollY } = useScroll()
   const isScrolled = useScrollTrigger(0.1)
+  const { data: session } = useSession()
 
   const navBackground = useTransform(
     scrollY,
@@ -121,11 +123,13 @@ export function Navigation() {
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </motion.button>
 
-          <Link href="/auth/signup">
-            <AnimatedButton variant="primary" size="sm">
-              Sign Up
-            </AnimatedButton>
-          </Link>
+          {!session && (
+            <Link href="/auth/signup" className="w-full">
+              <AnimatedButton variant="primary" size="sm">
+                Sign Up
+              </AnimatedButton>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -171,11 +175,13 @@ export function Navigation() {
                 <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
               </motion.button>
 
-              <Link href="/auth/signup" className="w-full">
-                <AnimatedButton variant="primary" size="sm" className="w-full">
-                  Sign Up
-                </AnimatedButton>
-              </Link>
+              {!session && (
+                <Link href="/auth/signup" className="w-full">
+                  <AnimatedButton variant="primary" size="sm" className="w-full">
+                    Sign Up
+                  </AnimatedButton>
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

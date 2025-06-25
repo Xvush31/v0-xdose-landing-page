@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, User, Video, ArrowLeft, Mail, Lock, UserCheck } from "lucide-react"
 import { AnimatedButton } from "@/components/ui/animated-button"
@@ -11,10 +11,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { signIn } from "next-auth/react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 type UserType = "creator" | "viewer" | null
 
 export default function SignUpPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [userType, setUserType] = useState<UserType>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -28,6 +32,17 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (session) {
+      router.replace("/") // ou une autre page (ex: /profile)
+    }
+  }, [session, status, router])
+
+  if (status === "loading" || session) {
+    return null;
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target

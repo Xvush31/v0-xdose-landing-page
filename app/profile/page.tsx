@@ -24,12 +24,12 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("videos")
-  const [editMode, setEditMode] = useState(false)
   const [form, setForm] = useState<any>({})
   const [saving, setSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
   const [uploadingImage, setUploadingImage] = useState<"image" | "cover" | null>(null)
+  const [editingField, setEditingField] = useState<string | null>(null)
 
   const tabs = [
     { id: "videos", label: "Vidéos", count: profile?.stats?.videos || "0" },
@@ -98,26 +98,36 @@ export default function ProfilePage() {
     })
     const data = await res.json()
     if (data.secure_url) {
-      setForm((f: any) => ({ ...f, [type]: data.secure_url }))
+      setSaving(true)
+      const patchRes = await fetch(`/api/users/${user?.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, [type]: data.secure_url }),
+      })
+      if (patchRes.ok) {
+        const updated = await patchRes.json()
+        setProfile(updated.user)
+        setForm((f: any) => ({ ...f, [type]: data.secure_url }))
+      }
+      setSaving(false)
     }
     setUploadingImage(null)
   }
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleFieldSave = async (field: string, value: string) => {
+    setForm((f: any) => ({ ...f, [field]: value }))
     setSaving(true)
     const res = await fetch(`/api/users/${user?.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, [field]: value }),
     })
     if (res.ok) {
-      setEditMode(false)
-      // Refresh profile
       const data = await res.json()
       setProfile(data.user)
     }
     setSaving(false)
+    setEditingField(null)
   }
 
   if (loading) {
@@ -140,11 +150,37 @@ export default function ProfilePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <img
-              src={profile?.cover || "/placeholder.svg"}
-              alt="Cover"
-              className="w-full h-full object-cover opacity-60"
-            />
+            <div
+              className="relative group cursor-pointer w-full h-40 rounded-xl border-2 border-black overflow-hidden"
+              onClick={() => coverInputRef.current?.click()}
+              tabIndex={0}
+              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") coverInputRef.current?.click(); }}
+              role="button"
+              aria-label="Changer la couverture"
+            >
+              <img
+                src={profile?.cover || "/placeholder.svg"}
+                alt="cover"
+                className="block w-full h-full object-cover"
+                style={{ minHeight: '100%', minWidth: '100%' }}
+                draggable={false}
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity pointer-events-none z-10">
+                <Pencil className="w-6 h-6 text-white mb-1" />
+                <span className="text-white text-xs">Changer la couverture</span>
+                {uploadingImage === "cover" && (
+                  <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>
+                )}
+              </div>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => handleFileChange(e, "cover")}
+                tabIndex={-1}
+              />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </motion.div>
 
@@ -158,28 +194,55 @@ export default function ProfilePage() {
             >
               <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6">
                 {/* Avatar */}
-                <motion.div
-                  className="relative"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                <div
+                  className="relative group cursor-pointer w-fit mx-auto"
+                  onClick={() => fileInputRef.current?.click()}
+                  tabIndex={0}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}
+                  role="button"
+                  aria-label="Changer la photo de profil"
                 >
                   <img
-                    src={profile?.avatar || "/placeholder.svg"}
-                    alt={profile?.name}
-                    className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-black object-cover"
+                    src={profile?.image || "/placeholder.svg"}
+                    alt="avatar"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-black"
+                    draggable={false}
                   />
-                  {profile?.verified && (
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center border-2 border-black">
-                      <span className="text-white text-sm">✓</span>
-                    </div>
-                  )}
-                </motion.div>
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center rounded-full transition-opacity pointer-events-none">
+                    <Pencil className="w-6 h-6 text-white mb-1" />
+                    <span className="text-white text-xs">Changer la photo de profil</span>
+                    {uploadingImage === "image" && (
+                      <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => handleFileChange(e, "image")}
+                    tabIndex={-1}
+                  />
+                </div>
 
                 {/* Profile Details */}
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
-                      <h1 className="text-3xl md:text-4xl font-bold mb-2">{profile?.name}</h1>
+                      <div className="mt-4 text-center">
+                        {editingField === "name" ? (
+                          <input
+                            className="text-3xl md:text-4xl font-bold mb-2 bg-black border-b border-purple-400 text-white text-center outline-none"
+                            value={form.name}
+                            autoFocus
+                            onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))}
+                            onBlur={e => handleFieldSave("name", e.target.value)}
+                            onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("name", (e.target as HTMLInputElement).value) }}}
+                          />
+                        ) : (
+                          <span className="text-3xl md:text-4xl font-bold mb-2 cursor-pointer group" onClick={() => setEditingField("name")}>{form.name || <span className="text-gray-400">Nom</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+                        )}
+                      </div>
                       <p className="text-gray-400 text-lg mb-4">{profile?.username}</p>
                     </div>
 
@@ -216,7 +279,20 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <p className="text-gray-300 max-w-2xl">{profile?.bio}</p>
+                <div className="mt-2 text-center">
+                  {editingField === "bio" ? (
+                    <textarea
+                      className="w-full max-w-xl mx-auto bg-black border-b border-purple-400 text-white text-center outline-none"
+                      value={form.bio}
+                      autoFocus
+                      onChange={e => setForm((f: any) => ({ ...f, bio: e.target.value }))}
+                      onBlur={e => handleFieldSave("bio", e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("bio", (e.target as HTMLTextAreaElement).value) }}}
+                    />
+                  ) : (
+                    <span className="text-gray-300 cursor-pointer group" onClick={() => setEditingField("bio")}>{form.bio || <span className="text-gray-500">Ajouter une bio</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+                  )}
+                </div>
 
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
                   <div className="flex items-center space-x-1">
@@ -340,42 +416,34 @@ export default function ProfilePage() {
         </div>
 
         {/* Edition du profil */}
-        {editMode ? (
-          <form onSubmit={handleSave} className="space-y-4 max-w-xl mx-auto mt-8">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                <img src={form.image || "/placeholder.svg"} alt="avatar" className="w-32 h-32 rounded-full object-cover border-4 border-black" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center rounded-full transition-opacity">
-                  <Pencil className="w-6 h-6 text-white mb-1" />
-                  <span className="text-white text-xs">Changer la photo de profil</span>
-                  {uploadingImage === "image" && <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>}
-                </div>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, "image")}/>
-              </div>
-              <div className="relative w-full group cursor-pointer" onClick={() => coverInputRef.current?.click()}>
-                <img src={form.cover || "/placeholder.svg"} alt="cover" className="w-full h-32 object-cover rounded-xl border-2 border-black" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center rounded-xl transition-opacity">
-                  <Pencil className="w-6 h-6 text-white mb-1" />
-                  <span className="text-white text-xs">Changer la couverture</span>
-                  {uploadingImage === "cover" && <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>}
-                </div>
-                <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, "cover")}/>
-              </div>
-            </div>
-            <input name="name" value={form.name} onChange={handleChange} placeholder="Nom" className="w-full p-2 rounded border" />
-            <textarea name="bio" value={form.bio} onChange={handleChange} placeholder="Bio" className="w-full p-2 rounded border" />
-            <input name="location" value={form.location} onChange={handleChange} placeholder="Localisation" className="w-full p-2 rounded border" />
-            <input name="website" value={form.website} onChange={handleChange} placeholder="Site web" className="w-full p-2 rounded border" />
-            <input name="twitter" value={form.twitter} onChange={handleChange} placeholder="Twitter" className="w-full p-2 rounded border" />
-            <input name="instagram" value={form.instagram} onChange={handleChange} placeholder="Instagram" className="w-full p-2 rounded border" />
-            <input name="birthdate" type="date" value={form.birthdate} onChange={handleChange} className="w-full p-2 rounded border" />
-            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded" disabled={saving}>{saving ? "Enregistrement..." : "Enregistrer"}</button>
-          </form>
-        ) : (
-          <div className="flex justify-center mt-8">
-            <button className="bg-purple-600 text-white px-4 py-2 rounded" onClick={() => setEditMode(true)}>Modifier mon profil</button>
-          </div>
-        )}
+        <div className="mt-2 text-center">
+          {editingField === "location" ? (
+            <input
+              className="bg-black border-b border-purple-400 text-white text-center outline-none"
+              value={form.location}
+              autoFocus
+              onChange={e => setForm((f: any) => ({ ...f, location: e.target.value }))}
+              onBlur={e => handleFieldSave("location", e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("location", (e.target as HTMLInputElement).value) }}}
+            />
+          ) : (
+            <span className="text-gray-400 cursor-pointer group" onClick={() => setEditingField("location")}>{form.location || <span className="text-gray-500">Ajouter une localisation</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+          )}
+        </div>
+        <div className="mt-2 text-center">
+          {editingField === "website" ? (
+            <input
+              className="bg-black border-b border-purple-400 text-white text-center outline-none"
+              value={form.website}
+              autoFocus
+              onChange={e => setForm((f: any) => ({ ...f, website: e.target.value }))}
+              onBlur={e => handleFieldSave("website", e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("website", (e.target as HTMLInputElement).value) }}}
+            />
+          ) : (
+            <span className="text-purple-400 cursor-pointer group" onClick={() => setEditingField("website")}>{form.website || <span className="text-gray-500">Ajouter un site web</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+          )}
+        </div>
       </main>
     </div>
   )

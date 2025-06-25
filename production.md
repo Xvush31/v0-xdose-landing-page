@@ -4,114 +4,131 @@ Ce document détaille les tâches restantes pour passer l'application en product
 
 ---
 
-## 🚀 Phase 1 : Fonctionnalités de base (Bloquant pour le Go-Live)
+## 🚀 Phase 1 : Fondations & Préparation Monétisation (Crypto-Ready)
 
-*L'objectif de cette phase est d'avoir une application fonctionnelle avec des données réelles.*
+### Tâche 1.1 : Architecture de données préventive (Prisma)
+- [ ] Modéliser dès maintenant (même si non visible dans l'UI) :
+    - Abonnements (user, creator, statut, dates, prix, wallet)
+    - Transactions crypto (type, montant, commission, statut, hash, wallet)
+    - Messages directs (expéditeur, destinataire, contenu, timestamp)
+    - Niveaux de contenu (gratuit, abonnement, pay-per-view)
 
-### Tâche 1.1 : Remplacer toutes les données mock par des requêtes API réelles
-- **Contexte** : Actuellement, les pages `Feed`, `Profile` et `Discover` utilisent des données de test (mocks). Il faut les connecter à la base de données.
-- [x] **Créer une route API `GET /api/videos`** : Elle doit récupérer les dernières vidéos de la base de données (avec les infos du créateur) pour les pages `Feed` et `Discover`.
-- [x] **Créer une route API `GET /api/users/[id]`** : Elle doit récupérer les informations d'un profil utilisateur et la liste de ses vidéos.
-- [x] **Refactoriser `FeedPage`** : Remplacer `mockPosts` par un appel à la nouvelle route API `/api/videos`.
-- [x] **Refactoriser `ProfilePage`** : Remplacer `profileData` et `userVideos` par un appel à la nouvelle route API `/api/users/[id]`.
-- [x] **Refactoriser `DiscoverPage`** : Remplacer `trendingVideos` par un appel à la nouvelle route API `/api/videos`.
-- [x] **Ajouter un lien “voir le profil” sur Discover/Feed**
-- [x] **Créer une route API pour lister tous les creators**
-- [x] **Permettre la modification du profil creator (nom, bio, image, cover, location, website, réseaux sociaux, etc.)**
-
-### Tâche 1.1 bis : Customisation avancée du profil creator
-- [x] **Formulaire d'édition du profil sur `/profile`**
-- [x] **Upload d'image/avatar/couverture via Cloudinary**
-- [x] **Sauvegarde sécurisée via PATCH `/api/users/[id]`**
-
-### Tâche 1.2 : Rendre le flow d'upload vidéo robuste et clair pour l'utilisateur
-- **Contexte** : Le flow d'upload fonctionne, mais l'UX (feedback utilisateur) est minimale.
-- **Actions** :
-    - [ ] **Gestion du succès d'upload** : Après le PUT vers Mux, afficher un message clair comme "Upload réussi, votre vidéo est en cours de traitement".
-    - [ ] **Redirection ou mise à jour de l'UI** : Après un upload réussi, rediriger vers la page du studio ou mettre à jour la liste des vidéos pour que l'utilisateur voie sa nouvelle vidéo (même en statut `pending`).
-    - [ ] **Feedback d'erreur détaillé** : Capturer et afficher les erreurs venant de l'API `/api/videos/upload` et de l'upload direct vers Mux.
-    - [ ] **État de chargement du player** : Le `VideoPlayer` doit afficher un spinner ou un skeleton pendant que Shaka Player charge la vidéo.
-
-### Tâche 1.3 : Configuration de l'environnement de production
-- **Contexte** : Les variables d'environnement sont critiques et doivent être parfaitement gérées.
-- **Actions** :
-    - [ ] **Créer un fichier `.env.example`** : Lister toutes les variables nécessaires (`DATABASE_URL`, `MUX_...`, `NEXTAUTH_...`) pour faciliter le setup pour d'autres développeurs et la CI.
-    - [ ] **Vérifier toutes les variables sur Vercel** : S'assurer que les secrets et les ID sont corrects et ne sont pas des valeurs de test.
+### Tâche 1.2 : Upload enrichi & options de monétisation
+- [ ] Permettre à l'upload vidéo :
+    - Choix de la visibilité (public, abonnés, PPV)
+    - Prix pour le contenu PPV (en crypto)
+    - Description, tags
+    - Prévisualisation avant publication
 
 ---
 
-## 🛡️ Phase 2 : Stabilisation & Sécurité (Hautement recommandé avant le Go-Live)
+## 🛡️ Phase 2 : Sécurité, Conformité Légale & Crypto
 
-*L'objectif est de rendre l'application fiable, sécurisée et testable.*
+### Tâche 2.1 : Sécurité financière & crypto
+- [ ] Intégration wallet crypto (connexion, signature, vérification)
+- [ ] Architecture prête pour smart contracts (paiements, abonnements, tips)
+- [ ] Chiffrement des données sensibles (wallets, messages)
+- [ ] Audit des permissions (accès aux contenus payants)
 
-### Tâche 2.1 : Audit de sécurité et renforcement des droits
-- **Contexte** : Les routes sont protégées, mais une vérification exhaustive est nécessaire.
-- **Actions** :
-    - [ ] **Vérifier toutes les routes API** : S'assurer que chaque route sensible vérifie bien le rôle et l'identité de l'utilisateur (ex: un utilisateur ne doit pas pouvoir modifier une vidéo qui ne lui appartient pas).
-    - [ ] **Sécuriser les webhooks** : Le secret du webhook Mux est en place, c'est bon. Vérifier qu'aucun autre webhook n'est exposé sans sécurité.
-
-### Tâche 2.2 : Mettre en place une stratégie de tests
-- **Contexte** : Il n'y a actuellement aucun test automatisé.
-- **Actions** :
-    - [ ] **Installer et configurer un framework de test** (ex: Vitest ou Jest avec React Testing Library).
-    - [ ] **Écrire des tests unitaires** pour les fonctions critiques (ex: la vérification de signature Mux).
-    - [ ] **Écrire des tests d'intégration** pour le flow d'upload complet.
-
-### Tâche 2.3 : Déploiement continu et migrations (CI/CD)
-- **Contexte** : Les migrations de base de données sont encore manuelles.
-- **Actions** :
-    - [ ] **Automatiser les migrations Prisma** : Ajouter la commande `prisma migrate deploy` au script de build de Vercel pour que les migrations s'appliquent automatiquement lors d'un déploiement.
-    - [ ] **Mettre en place un pipeline CI simple** (ex: GitHub Actions) qui lance le `lint` et les `tests` à chaque push pour garantir la qualité du code.
+### Tâche 2.2 : Conformité légale de base
+- [ ] Vérification d'âge (KYC/AML adapté crypto)
+- [ ] KYC créateurs (pour les payouts)
+- [ ] CGU et politique de contenu adaptées
 
 ---
 
-## ✨ Phase 3 : Optimisations & Finitions (Peut être fait post-Go-Live)
+## 💸 Phase 3 : Monétisation & Économie Créateurs (Crypto Only)
 
-*L'objectif est d'améliorer l'expérience utilisateur, les performances et la maintenabilité.*
+### Tâche 3.1 : Paiements & Payouts crypto
+- [ ] Intégration complète wallet-to-wallet (ex: Metamask, WalletConnect)
+- [ ] Système de commission plateforme (smart contract)
+- [ ] Interface payouts créateurs (withdraw crypto)
+- [ ] Gestion des litiges/remboursements (logique smart contract)
 
-### Tâche 3.1 : Optimisation des performances
-- **Actions** :
-    - [ ] **Optimiser les images** : Utiliser `next/image` pour les miniatures (`poster`) et les avatars pour profiter de l'optimisation automatique.
-    - [ ] **Analyser le bundle** : Utiliser `@next/bundle-analyzer` pour identifier et réduire les dépendances lourdes.
-    - [ ] **Lazy loading** : Charger le `VideoPlayer` de manière dynamique uniquement quand il est visible à l'écran.
+### Tâche 3.2 : Abonnements créateurs
+- [ ] Interface pour fixer le prix d'abonnement (crypto)
+- [ ] Flow d'abonnement fan (transaction on-chain, confirmation)
+- [ ] Dashboard fan pour gérer ses abonnements actifs
+- [ ] Contenu exclusif basé sur le statut d'abonnement (on-chain check)
 
-### Tâche 3.2 : SEO et Métadonnées
-- **Actions** :
-    - [ ] **Métadonnées dynamiques** : Mettre à jour le `<title>` et les `<meta>` (description, og:image) de manière dynamique sur les pages de profil et de vidéo.
-    - [ ] **Sitemap** : Générer un `sitemap.xml` pour aider au référencement.
+### Tâche 3.3 : Pay-Per-View (PPV)
+- [ ] Création de contenu PPV (prix à l'unité, crypto)
+- [ ] Achat instantané (transaction on-chain)
+- [ ] Accès permanent après achat (NFT ou log on-chain)
 
-### Tâche 3.3 : Monitoring et gestion des erreurs
-- **Actions** :
-    - [ ] **Intégrer un service de monitoring** (ex: Sentry) pour capturer les erreurs en production.
-    - [ ] **Créer des pages d'erreur personnalisées** (`404.tsx`, `500.tsx`).
-
-### Tâche 3.4 : Qualité de vie et documentation
-- **Actions** :
-    - [ ] **Mettre à jour le `README.md`** : Expliquer le setup complet, le fonctionnement avec Mux, et les commandes utiles.
-    - [ ] **Nettoyer le code** : Supprimer les `console.log` de debug, les commentaires inutiles, et les fichiers non utilisés.
-
----
-
-## 🧑‍💻 Logique profils (Creator/Viewer)
-
-- Un **creator** peut :
-  - Visiter et modifier son propre profil (page `/profile`)
-  - Visiter le profil public d'autres creators (page `/profile/[id]`)
-- Un **viewer** peut :
-  - Visiter le profil public de n'importe quel creator (page `/profile/[id]`)
-  - Ne peut pas modifier de profil
-- Les routes d'édition (modification profil, upload, suppression vidéo) doivent vérifier que l'utilisateur connecté est bien le propriétaire du profil.
-- Le profil public (`/profile/[id]`) affiche les infos et vidéos publiques d'un creator, accessible à tous.
-- Le profil privé (`/profile`) affiche le dashboard complet (édition, upload, stats), accessible uniquement au creator connecté.
+### Tâche 3.4 : Système de pourboires
+- [ ] Boutons de tips sur profils/contenus (crypto)
+- [ ] Montants flexibles (prédéfini + custom)
+- [ ] Notifications temps réel pour les créateurs
 
 ---
 
-**À faire en priorité pour passer en production :**
-- Remplacer tous les mocks par des requêtes réelles (Prisma/API)
-- Tester le flow complet d'upload/lecture vidéo avec de vrais utilisateurs
-- Sécuriser toutes les routes et vérifier les droits
-- Mettre à jour la documentation (README, .env, usage Mux)
-- Mettre en place la CI et les scripts de migration Prisma sur la prod
+## 📈 Phase 4 : Engagement, Analytics & Outils Créateurs
+
+### Tâche 4.1 : Messagerie directe
+- [ ] DM de base (fan-créateur)
+- [ ] Messages premium (payants, crypto)
+- [ ] Modération (filtrage, blocage)
+
+### Tâche 4.2 : Analytics créateur avancés
+- [ ] Dashboard revenus (abonnements, PPV, tips)
+- [ ] Statistiques d'engagement (vues, likes, commentaires, conversion)
+- [ ] Insights audience (données anonymisées)
+- [ ] Prédictions IA (optimisation revenus)
+
+### Tâche 4.3 : Demandes personnalisées
+- [ ] Système de commandes (fans → créateurs)
+- [ ] Négociation de prix (crypto)
+- [ ] Suivi des commandes (statuts, notifications)
+
+---
+
+## 🚀 Phase 5 : Différenciation & Innovation
+
+### Tâche 5.1 : Outils de création assistés
+- [ ] Génération automatique de teasers (IA)
+- [ ] Optimisation des titres (IA)
+- [ ] Planification de contenu (calendrier éditorial)
+
+### Tâche 5.2 : Gamification intelligente
+- [ ] Système de badges (créateurs/fans)
+- [ ] Défis mensuels (récompenses crypto)
+- [ ] Leaderboards publics
+
+### Tâche 5.3 : Live streaming intégré
+- [ ] Streams en direct (crypto paywall)
+- [ ] Super chat payant (crypto)
+- [ ] Enregistrement automatique (PPV post-stream)
+
+---
+
+## 📢 Stratégies de Croissance & Acquisition
+- [ ] Programme d'acquisition créateurs (incentives crypto, commission réduite, avances)
+- [ ] Outils de partage social, parrainage, challenges viraux
+- [ ] API pour intégrations tierces (Discord, Telegram, etc.)
+
+---
+
+## 📅 Calendrier d'Exécution (exemple)
+- Mois 1-2 : Fondations renforcées, architecture crypto, abonnements de base
+- Mois 3-4 : Paiements, PPV, pourboires, analytics de base
+- Mois 5-6 : Messagerie, outils IA, gamification, live (beta)
+- Mois 7-8 : Acquisition créateurs, viralité, optimisation, expansion
+
+---
+
+## 🎯 KPIs & Objectifs
+- Acquisition créateurs actifs, rétention, revenus, engagement, conversion payeur
+- Budget et ressources adaptés à la crypto (devs blockchain, conformité, infra)
+
+---
+
+**Priorités absolues pour le Go-Live compétitif**
+- Système de monétisation crypto complet (abonnements + PPV + tips)
+- Payouts fiables et commissions compétitives (smart contract)
+- Interface créateur intuitive avec analytics de base
+- Sécurité et conformité légale irréprochables (KYC/AML crypto)
+- Programme d'acquisition créateurs avec incentives attractifs
 
 ---
 
