@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { Share, MoreHorizontal, Play, Heart, Calendar, MapPin, LinkIcon } from "lucide-react"
+import { Share, MoreHorizontal, Play, Heart, Calendar, MapPin, LinkIcon, Pencil } from "lucide-react"
 import { Navigation } from "@/components/layout/navigation"
 import { AnimatedButton } from "@/components/ui/animated-button"
 import { VideoPlayer } from "@/components/ui/VideoPlayer"
@@ -29,6 +29,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingImage, setUploadingImage] = useState<"image" | "cover" | null>(null)
 
   const tabs = [
     { id: "videos", label: "Vidéos", count: profile?.stats?.videos || "0" },
@@ -87,9 +88,10 @@ export default function ProfilePage() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "cover") => {
     const file = e.target.files?.[0]
     if (!file) return
+    setUploadingImage(type)
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("upload_preset", "xdose_unsigned") // preset Cloudinary unsigned
+    formData.append("upload_preset", "xdose_unsigned")
     const res = await fetch("https://api.cloudinary.com/v1_1/dt959yiaq/image/upload", {
       method: "POST",
       body: formData,
@@ -98,6 +100,7 @@ export default function ProfilePage() {
     if (data.secure_url) {
       setForm((f: any) => ({ ...f, [type]: data.secure_url }))
     }
+    setUploadingImage(null)
   }
 
   const handleSave = async (e: React.FormEvent) => {
@@ -182,9 +185,11 @@ export default function ProfilePage() {
 
                     {/* Action Buttons */}
                     <div className="flex items-center space-x-3">
-                      <AnimatedButton variant="primary" size="md">
-                        S'abonner
-                      </AnimatedButton>
+                      {user?.id !== profile?.id && (
+                        <AnimatedButton variant="primary" size="md">
+                          S'abonner
+                        </AnimatedButton>
+                      )}
                       <motion.button
                         className="p-3 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors"
                         whileHover={{ scale: 1.05 }}
@@ -338,14 +343,22 @@ export default function ProfilePage() {
         {editMode ? (
           <form onSubmit={handleSave} className="space-y-4 max-w-xl mx-auto mt-8">
             <div className="flex flex-col items-center gap-4">
-              <div className="relative">
+              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <img src={form.image || "/placeholder.svg"} alt="avatar" className="w-32 h-32 rounded-full object-cover border-4 border-black" />
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 bg-purple-500 text-white px-2 py-1 rounded-full text-xs">Changer</button>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center rounded-full transition-opacity">
+                  <Pencil className="w-6 h-6 text-white mb-1" />
+                  <span className="text-white text-xs">Changer la photo de profil</span>
+                  {uploadingImage === "image" && <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>}
+                </div>
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, "image")}/>
               </div>
-              <div className="relative w-full">
+              <div className="relative w-full group cursor-pointer" onClick={() => coverInputRef.current?.click()}>
                 <img src={form.cover || "/placeholder.svg"} alt="cover" className="w-full h-32 object-cover rounded-xl border-2 border-black" />
-                <button type="button" onClick={() => coverInputRef.current?.click()} className="absolute bottom-2 right-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs">Changer couverture</button>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center rounded-xl transition-opacity">
+                  <Pencil className="w-6 h-6 text-white mb-1" />
+                  <span className="text-white text-xs">Changer la couverture</span>
+                  {uploadingImage === "cover" && <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>}
+                </div>
                 <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, "cover")}/>
               </div>
             </div>
@@ -357,7 +370,6 @@ export default function ProfilePage() {
             <input name="instagram" value={form.instagram} onChange={handleChange} placeholder="Instagram" className="w-full p-2 rounded border" />
             <input name="birthdate" type="date" value={form.birthdate} onChange={handleChange} className="w-full p-2 rounded border" />
             <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded" disabled={saving}>{saving ? "Enregistrement..." : "Enregistrer"}</button>
-            <button type="button" className="ml-4 text-gray-400 underline" onClick={() => setEditMode(false)}>Annuler</button>
           </form>
         ) : (
           <div className="flex justify-center mt-8">
