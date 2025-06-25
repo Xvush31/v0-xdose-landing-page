@@ -27,6 +27,7 @@ interface VideoPost {
   isLiked: boolean
   isBookmarked: boolean
   playbackId: string
+  status: string
 }
 
 export default function FeedPage() {
@@ -60,6 +61,7 @@ export default function FeedPage() {
               isLiked: false,
               isBookmarked: false,
               playbackId: video.playbackId,
+              status: video.status,
             }))
           )
         } else {
@@ -87,6 +89,8 @@ export default function FeedPage() {
     setPosts(posts.map((post) => (post.id === postId ? { ...post, isBookmarked: !post.isBookmarked } : post)))
   }
 
+  const readyPosts = posts.filter(v => v.status === "ready" && v.playbackId);
+
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <div className="min-h-screen bg-background text-foreground">
@@ -106,9 +110,11 @@ export default function FeedPage() {
               <div className="text-center py-12">Chargement...</div>
             ) : error ? (
               <div className="text-center text-red-500 py-12">{error}</div>
+            ) : readyPosts.length === 0 ? (
+              <div className="col-span-full text-center text-gray-400 py-12">Aucune vidéo disponible</div>
             ) : (
               <div className="space-y-8">
-                {posts.map((post, index) => (
+                {readyPosts.map((post, index) => (
                   <motion.article
                     key={post.id}
                     className="bg-card rounded-2xl overflow-hidden border border-border"

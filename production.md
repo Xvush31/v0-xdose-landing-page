@@ -1,4 +1,12 @@
-# Xdose – Roadmap de Production
+# Xdose – Roadmap & Vision
+
+## Sommaire
+- [Roadmap technique / production](#roadmap-technique--production)
+- [Vision business & différenciation](#vision-business--différenciation)
+
+---
+
+## Roadmap technique / production
 
 Ce document détaille les tâches restantes pour passer l'application en production, organisées par phases critiques.
 
@@ -129,6 +137,14 @@ Ce document détaille les tâches restantes pour passer l'application en product
 - Interface créateur intuitive avec analytics de base
 - Sécurité et conformité légale irréprochables (KYC/AML crypto)
 - Programme d'acquisition créateurs avec incentives attractifs
+
+---
+
+## Vision business & différenciation
+
+<!-- Ici, je place toute la partie ambition, différenciation, crypto, IA, acquisition, stratégie, etc. (éléments de la version enrichie, business, etc.) -->
+
+// ... (contenu vision business & différenciation) ...
 
 ---
 

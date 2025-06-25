@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="xdose-gradient" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a78bfa"/>
+      <stop offset="0.5" stop-color="#ec4899"/>
+      <stop offset="1" stop-color="#f59e42"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#18181b"/>
+  <g filter="url(#shadow)">
+    <path d="M16 16L48 48M48 16L16 48" stroke="url(#xdose-gradient)" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <defs>
+    <filter id="shadow" x="0" y="0" width="64" height="64" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#a78bfa" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+</svg> 

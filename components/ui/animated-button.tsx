@@ -6,13 +6,19 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useMousePosition } from "@/hooks/use-mouse-position"
 
-interface AnimatedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface AnimatedButtonProps extends React.HTMLAttributes<HTMLElement> {
+  as?: keyof JSX.IntrinsicElements
+  type?: "button" | "submit" | "reset"
+  disabled?: boolean
   variant?: "primary" | "secondary" | "ghost"
   size?: "sm" | "md" | "lg"
   children: React.ReactNode
 }
 
 export function AnimatedButton({
+  as = "button",
+  type,
+  disabled,
   variant = "primary",
   size = "md",
   className,
@@ -39,8 +45,16 @@ export function AnimatedButton({
     y: mousePosition.y * 0.01,
   }
 
+  const MotionComponent = motion[as as keyof typeof motion] || motion.button
+
+  const extraProps: any = {}
+  if (as === "button") {
+    if (type) extraProps.type = type
+    if (typeof disabled !== "undefined") extraProps.disabled = disabled
+  }
+
   return (
-    <motion.button
+    <MotionComponent
       className={cn(
         "relative font-semibold rounded-full transition-all duration-300 flex items-center justify-center overflow-hidden group",
         variants[variant],
@@ -58,6 +72,7 @@ export function AnimatedButton({
         stiffness: 400,
         damping: 17,
       }}
+      {...extraProps}
       {...props}
     >
       {/* Shimmer Effect */}
@@ -69,6 +84,6 @@ export function AnimatedButton({
 
       {/* Content */}
       <span className="relative z-10 flex items-center">{children}</span>
-    </motion.button>
+    </MotionComponent>
   )
 }

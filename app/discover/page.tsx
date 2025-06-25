@@ -63,6 +63,8 @@ export default function DiscoverPage() {
       .then(data => setCreators(data.creators || []))
   }, [])
 
+  const readyVideos = videos.filter(v => v.status === "ready" && v.playbackId);
+
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <div className="min-h-screen bg-background text-foreground">
@@ -149,8 +151,10 @@ export default function DiscoverPage() {
                       <div className="col-span-2 text-center py-12">Chargement...</div>
                     ) : error ? (
                       <div className="col-span-2 text-center text-red-500 py-12">{error}</div>
+                    ) : readyVideos.length === 0 ? (
+                      <div className="col-span-2 text-center text-gray-400 py-12">Aucune vidéo disponible</div>
                     ) : (
-                      videos.map((video, index) => (
+                      readyVideos.map((video, index) => (
                         <motion.div
                           key={video.id}
                           className="group cursor-pointer"

@@ -1,3 +1,16 @@
+# Xdose – README
+
+## À propos de la roadmap
+
+Le projet Xdose s'appuie sur une double approche :
+
+- **Roadmap technique / production** : toutes les étapes concrètes pour passer en production, checklist, sécurité, monétisation, exécution technique.
+- **Vision business & différenciation** : la stratégie globale, l'ambition, la différenciation crypto/IA, l'acquisition, la vision long terme.
+
+👉 **Consulte le fichier [`production.md`](./production.md)** pour accéder à ces deux dimensions : le sommaire en haut du fichier permet de naviguer facilement entre la roadmap technique et la vision business.
+
+Chaque section est essentielle : la technique pour l'exécution, la vision pour l'alignement stratégique et l'innovation.
+
 # Xdose landing page
 
 *Automatically synced with your [v0.dev](https://v0.dev) deployments*

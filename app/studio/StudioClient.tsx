@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Upload, Video, ImageIcon, Settings, BarChart3, DollarSign, Users } from "lucide-react"
 import { Navigation } from "@/components/layout/navigation"
@@ -45,6 +45,8 @@ export default function StudioClient() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [confetti, setConfetti] = useState(false)
+  const progressTimer = useRef<NodeJS.Timeout | null>(null)
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -95,20 +97,34 @@ export default function StudioClient() {
         return
       }
       const { uploadUrl } = await res.json()
-      // 2. Upload direct du fichier à Mux
-      const muxRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
+      // 2. Upload direct du fichier à Mux avec suivi de progression
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open("PUT", uploadUrl)
+        xhr.setRequestHeader("Content-Type", file.type)
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100)
+            setUploadProgress(percent)
+          }
+        }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setUploadProgress(100)
+            resolve()
+          } else {
+            setUploadError("Erreur lors de l'upload du fichier vidéo vers Mux: " + xhr.statusText)
+            setUploading(false)
+            reject(new Error(xhr.statusText))
+          }
+        }
+        xhr.onerror = () => {
+          setUploadError("Erreur réseau lors de l'upload vidéo.")
+          setUploading(false)
+          reject(new Error("Erreur réseau"))
+        }
+        xhr.send(file)
       })
-      if (!muxRes.ok) {
-        const errText = await muxRes.text();
-        setUploadError("Erreur lors de l'upload du fichier vidéo vers Mux: " + errText);
-        setUploading(false);
-        return;
-      }
       setUploadSuccess(true)
       setTitle("")
       setFile(null)
@@ -118,6 +134,36 @@ export default function StudioClient() {
       setUploading(false)
     }
   }
+
+  // Progression optimiste
+  useEffect(() => {
+    if (uploading && typeof uploadProgress !== "number") {
+      let fakeProgress = 0
+      progressTimer.current = setInterval(() => {
+        fakeProgress += Math.random() * 2 + 1 // Avance non linéaire
+        if (fakeProgress < 95) {
+          setUploadProgress(Math.floor(fakeProgress))
+        } else {
+          setUploadProgress(95)
+          if (progressTimer.current) clearInterval(progressTimer.current)
+        }
+      }, 80)
+    }
+    if (!uploading && progressTimer.current) {
+      clearInterval(progressTimer.current)
+    }
+    return () => {
+      if (progressTimer.current) clearInterval(progressTimer.current)
+    }
+  }, [uploading])
+
+  // Quand l'upload réel termine, anime 95->100 + confettis
+  useEffect(() => {
+    if (uploadProgress === 100) {
+      setConfetti(true)
+      setTimeout(() => setConfetti(false), 2500)
+    }
+  }, [uploadProgress])
 
   const stats = [
     { label: "Revenus ce mois", value: "€2,450", icon: <DollarSign className="w-5 h-5" />, change: "+12%" },
@@ -221,10 +267,69 @@ export default function StudioClient() {
                       disabled={uploading}
                     />
                     <label htmlFor="video-upload-input">
-                      <AnimatedButton variant="secondary" size="md" as="span">
+                      <AnimatedButton
+                        as="span"
+                        variant="secondary"
+                        size="md"
+                        tabIndex={0}
+                        role="button"
+                        onKeyDown={e => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            document.getElementById("video-upload-input")?.click();
+                          }
+                        }}
+                      >
                         Choisir des fichiers
                       </AnimatedButton>
                     </label>
+                    {/* Barre de progression premium */}
+                    {typeof uploadProgress === "number" && (
+                      <MotionDiv
+                        className="relative w-full h-6 mt-6 rounded-full bg-gray-800 overflow-hidden shadow-lg"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        aria-label="Progression de l'upload"
+                        role="progressbar"
+                        aria-valuenow={uploadProgress}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <MotionDiv
+                          className="absolute left-0 top-0 h-full rounded-full"
+                          style={{
+                            width: `${uploadProgress}%`,
+                            background: "linear-gradient(90deg, #a78bfa 0%, #ec4899 50%, #f59e42 100%)",
+                            boxShadow: uploadProgress === 100 ? "0 0 16px 4px #a78bfa55" : undefined,
+                          }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${uploadProgress}%` }}
+                          transition={{ duration: uploadProgress === 100 ? 0.7 : 0.5, ease: "easeInOut" }}
+                        />
+                        <span className="absolute inset-0 flex items-center justify-center font-bold text-white text-sm select-none">
+                          {uploadProgress === 100 ? (
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                              className="flex items-center gap-1"
+                            >
+                              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#22c55e"/><path d="M6 10.5L9 13.5L14 8.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              Upload terminé, ta vidéo est prête à briller !
+                            </motion.span>
+                          ) : (
+                            `${uploadProgress}%`
+                          )}
+                        </span>
+                        {/* Confettis animés */}
+                        {confetti && (
+                          <span className="pointer-events-none absolute inset-0 z-20">
+                            <ConfettiEffect />
+                          </span>
+                        )}
+                      </MotionDiv>
+                    )}
                   </div>
                   {uploadError && <div className="text-red-500 text-sm">{uploadError}</div>}
                   {uploadSuccess && <div className="text-green-500 text-sm">Vidéo uploadée avec succès !</div>}
@@ -323,5 +428,40 @@ export default function StudioClient() {
         </div>
       </main>
     </div>
+  )
+}
+
+// ConfettiEffect composant (inline, simple SVG/JSX pour effet visuel)
+function ConfettiEffect() {
+  // Génère 24 confettis animés
+  return (
+    <svg width="100%" height="100%" style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}>
+      {[...Array(24)].map((_, i) => (
+        <circle
+          key={i}
+          cx={Math.random() * 100 + '%'}
+          cy={Math.random() * 20 + 40 + '%'}
+          r={Math.random() * 3 + 2}
+          fill={["#a78bfa", "#ec4899", "#f59e42", "#22c55e"][i % 4]}
+        >
+          <animate
+            attributeName="cy"
+            from={Math.random() * 20 + 40 + '%'}
+            to={Math.random() * 80 + 10 + '%'}
+            dur={0.9 + Math.random() * 0.7 + 's'}
+            begin={0.1 * i + 's'}
+            fill="freeze"
+          />
+          <animate
+            attributeName="opacity"
+            from="1"
+            to="0"
+            dur={0.7 + Math.random() * 0.7 + 's'}
+            begin={0.1 * i + 's'}
+            fill="freeze"
+          />
+        </circle>
+      ))}
+    </svg>
   )
 } 
