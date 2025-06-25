@@ -27,7 +27,6 @@ export default function ProfilePage() {
   const [form, setForm] = useState<any>({})
   const [saving, setSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const coverInputRef = useRef<HTMLInputElement>(null)
   const [uploadingImage, setUploadingImage] = useState<"image" | "cover" | null>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
 
@@ -141,53 +140,13 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-black text-white">
       <Navigation />
 
-      <main className="pt-20">
-        {/* Cover & Profile Section */}
+      <main className="pt-40">
+        {/* Profile Section (sans cover) */}
         <div className="relative">
-          {/* Cover Image */}
-          <motion.div
-            className="h-64 md:h-80 bg-gradient-to-r from-purple-900 via-pink-900 to-orange-900 relative overflow-hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div
-              className="relative group cursor-pointer w-full h-40 rounded-xl border-2 border-black overflow-hidden"
-              onClick={() => coverInputRef.current?.click()}
-              tabIndex={0}
-              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") coverInputRef.current?.click(); }}
-              role="button"
-              aria-label="Changer la couverture"
-            >
-              <img
-                src={profile?.cover || "/placeholder.svg"}
-                alt="cover"
-                className="block w-full h-full object-cover"
-                style={{ minHeight: '100%', minWidth: '100%' }}
-                draggable={false}
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity pointer-events-none z-10">
-                <Pencil className="w-6 h-6 text-white mb-1" />
-                <span className="text-white text-xs">Changer la couverture</span>
-                {uploadingImage === "cover" && (
-                  <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>
-                )}
-              </div>
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={e => handleFileChange(e, "cover")}
-                tabIndex={-1}
-              />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </motion.div>
-
           {/* Profile Info */}
           <div className="max-w-6xl mx-auto px-4">
             <motion.div
-              className="relative -mt-16 md:-mt-20"
+              className="relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -321,7 +280,7 @@ export default function ProfilePage() {
               >
                 {Object.entries(profile?.stats || {}).map(([key, value]) => (
                   <motion.div key={key} className="text-center" whileHover={{ scale: 1.05 }}>
-                    <div className="text-2xl font-bold">{value}</div>
+                    <div className="text-2xl font-bold">{String(value)}</div>
                     <div className="text-gray-400 text-sm capitalize">{key}</div>
                   </motion.div>
                 ))}
