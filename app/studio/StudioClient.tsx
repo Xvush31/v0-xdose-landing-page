@@ -47,6 +47,7 @@ export default function StudioClient() {
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [confetti, setConfetti] = useState(false)
   const progressTimer = useRef<NodeJS.Timeout | null>(null)
+  const optimisticProgress = useRef<number>(0)
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -78,6 +79,7 @@ export default function StudioClient() {
     setUploadError(null)
     setUploadSuccess(false)
     setUploadProgress(null)
+    optimisticProgress.current = 0
     if (!title || !file) {
       setUploadError("Veuillez renseigner un titre et choisir un fichier vidéo.")
       return
@@ -104,8 +106,12 @@ export default function StudioClient() {
         xhr.setRequestHeader("Content-Type", file.type)
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100)
-            setUploadProgress(percent)
+            const realPercent = Math.round((event.loaded / event.total) * 100)
+            // Prend le relais de 85% à 95% de manière fluide
+            if (realPercent > 85) {
+              const adjustedPercent = 85 + (realPercent - 85) * 0.5 // Ralentit la progression 85-95%
+              setUploadProgress(Math.floor(adjustedPercent))
+            }
           }
         }
         xhr.onload = () => {
@@ -135,19 +141,22 @@ export default function StudioClient() {
     }
   }
 
-  // Progression optimiste
+  // Progression optimiste (plus réaliste et crédible)
   useEffect(() => {
     if (uploading && typeof uploadProgress !== "number") {
-      let fakeProgress = 0
+      optimisticProgress.current = 0
       progressTimer.current = setInterval(() => {
-        fakeProgress += Math.random() * 2 + 1 // Avance non linéaire
-        if (fakeProgress < 95) {
-          setUploadProgress(Math.floor(fakeProgress))
+        // Progression plus lente et réaliste
+        const increment = Math.random() * 0.8 + 0.3 // Entre 0.3 et 1.1%
+        optimisticProgress.current += increment
+        
+        if (optimisticProgress.current < 85) {
+          setUploadProgress(Math.floor(optimisticProgress.current))
         } else {
-          setUploadProgress(95)
+          setUploadProgress(85)
           if (progressTimer.current) clearInterval(progressTimer.current)
         }
-      }, 80)
+      }, 150) // Plus lent : 150ms au lieu de 80ms
     }
     if (!uploading && progressTimer.current) {
       clearInterval(progressTimer.current)
