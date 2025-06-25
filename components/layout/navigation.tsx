@@ -8,7 +8,7 @@ import { useScrollTrigger } from "@/hooks/use-scroll-trigger"
 import { AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
 import Link from "next/link"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -123,12 +123,13 @@ export function Navigation() {
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </motion.button>
 
-          {!session && (
-            <Link href="/auth/signup" className="w-full">
-              <AnimatedButton variant="primary" size="sm">
-                Sign Up
-              </AnimatedButton>
-            </Link>
+          {session && (
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="w-full bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition"
+            >
+              Se déconnecter
+            </button>
           )}
         </div>
 
@@ -175,12 +176,13 @@ export function Navigation() {
                 <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
               </motion.button>
 
-              {!session && (
-                <Link href="/auth/signup" className="w-full">
-                  <AnimatedButton variant="primary" size="sm" className="w-full">
-                    Sign Up
-                  </AnimatedButton>
-                </Link>
+              {session && (
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="w-full bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition"
+                >
+                  Se déconnecter
+                </button>
               )}
             </div>
           </motion.div>
