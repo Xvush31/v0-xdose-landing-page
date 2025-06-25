@@ -11,10 +11,18 @@ Ce document détaille les tâches restantes pour passer l'application en product
 ### Tâche 1.1 : Remplacer toutes les données mock par des requêtes API réelles
 - **Contexte** : Actuellement, les pages `Feed`, `Profile` et `Discover` utilisent des données de test (mocks). Il faut les connecter à la base de données.
 - [x] **Créer une route API `GET /api/videos`** : Elle doit récupérer les dernières vidéos de la base de données (avec les infos du créateur) pour les pages `Feed` et `Discover`.
-- [ ] **Créer une route API `GET /api/users/[id]`** : Elle doit récupérer les informations d'un profil utilisateur et la liste de ses vidéos.
+- [x] **Créer une route API `GET /api/users/[id]`** : Elle doit récupérer les informations d'un profil utilisateur et la liste de ses vidéos.
 - [x] **Refactoriser `FeedPage`** : Remplacer `mockPosts` par un appel à la nouvelle route API `/api/videos`.
-- [ ] **Refactoriser `ProfilePage`** : Remplacer `profileData` et `userVideos` par un appel à la nouvelle route API `/api/users/[id]`.
+- [x] **Refactoriser `ProfilePage`** : Remplacer `profileData` et `userVideos` par un appel à la nouvelle route API `/api/users/[id]`.
 - [x] **Refactoriser `DiscoverPage`** : Remplacer `trendingVideos` par un appel à la nouvelle route API `/api/videos`.
+- [x] **Ajouter un lien “voir le profil” sur Discover/Feed**
+- [x] **Créer une route API pour lister tous les creators**
+- [x] **Permettre la modification du profil creator (nom, bio, image, cover, location, website, réseaux sociaux, etc.)**
+
+### Tâche 1.1 bis : Customisation avancée du profil creator
+- [x] **Formulaire d'édition du profil sur `/profile`**
+- [x] **Upload d'image/avatar/couverture via Cloudinary**
+- [x] **Sauvegarde sécurisée via PATCH `/api/users/[id]`**
 
 ### Tâche 1.2 : Rendre le flow d'upload vidéo robuste et clair pour l'utilisateur
 - **Contexte** : Le flow d'upload fonctionne, mais l'UX (feedback utilisateur) est minimale.

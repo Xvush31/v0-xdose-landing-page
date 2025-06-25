@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Share, MoreHorizontal, Play, Heart, Calendar, MapPin, LinkIcon } from "lucide-react"
 import { Navigation } from "@/components/layout/navigation"
@@ -24,6 +24,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("videos")
+  const [editMode, setEditMode] = useState(false)
+  const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const tabs = [
     { id: "videos", label: "Vidéos", count: profile?.stats?.videos || "0" },
@@ -56,6 +61,61 @@ export default function ProfilePage() {
         setLoading(false)
       })
   }, [user, status])
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        name: profile.name || "",
+        bio: profile.bio || "",
+        image: profile.image || "",
+        cover: profile.cover || "",
+        location: profile.location || "",
+        website: profile.website || "",
+        twitter: profile.twitter || "",
+        instagram: profile.instagram || "",
+        birthdate: profile.birthdate ? profile.birthdate.slice(0, 10) : "",
+        customLinks: profile.customLinks || [],
+      })
+    }
+  }, [profile])
+
+  const handleChange = (e: any) => {
+    const { name, value } = e.target
+    setForm((f: any) => ({ ...f, [name]: value }))
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "cover") => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("upload_preset", "xdose_unsigned") // preset Cloudinary unsigned
+    const res = await fetch("https://api.cloudinary.com/v1_1/dt959yiaq/image/upload", {
+      method: "POST",
+      body: formData,
+    })
+    const data = await res.json()
+    if (data.secure_url) {
+      setForm((f: any) => ({ ...f, [type]: data.secure_url }))
+    }
+  }
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    const res = await fetch(`/api/users/${user?.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    })
+    if (res.ok) {
+      setEditMode(false)
+      // Refresh profile
+      const data = await res.json()
+      setProfile(data.user)
+    }
+    setSaving(false)
+  }
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-white">Chargement...</div>
@@ -273,6 +333,37 @@ export default function ProfilePage() {
             ))}
           </motion.div>
         </div>
+
+        {/* Edition du profil */}
+        {editMode ? (
+          <form onSubmit={handleSave} className="space-y-4 max-w-xl mx-auto mt-8">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <img src={form.image || "/placeholder.svg"} alt="avatar" className="w-32 h-32 rounded-full object-cover border-4 border-black" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 bg-purple-500 text-white px-2 py-1 rounded-full text-xs">Changer</button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, "image")}/>
+              </div>
+              <div className="relative w-full">
+                <img src={form.cover || "/placeholder.svg"} alt="cover" className="w-full h-32 object-cover rounded-xl border-2 border-black" />
+                <button type="button" onClick={() => coverInputRef.current?.click()} className="absolute bottom-2 right-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs">Changer couverture</button>
+                <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, "cover")}/>
+              </div>
+            </div>
+            <input name="name" value={form.name} onChange={handleChange} placeholder="Nom" className="w-full p-2 rounded border" />
+            <textarea name="bio" value={form.bio} onChange={handleChange} placeholder="Bio" className="w-full p-2 rounded border" />
+            <input name="location" value={form.location} onChange={handleChange} placeholder="Localisation" className="w-full p-2 rounded border" />
+            <input name="website" value={form.website} onChange={handleChange} placeholder="Site web" className="w-full p-2 rounded border" />
+            <input name="twitter" value={form.twitter} onChange={handleChange} placeholder="Twitter" className="w-full p-2 rounded border" />
+            <input name="instagram" value={form.instagram} onChange={handleChange} placeholder="Instagram" className="w-full p-2 rounded border" />
+            <input name="birthdate" type="date" value={form.birthdate} onChange={handleChange} className="w-full p-2 rounded border" />
+            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded" disabled={saving}>{saving ? "Enregistrement..." : "Enregistrer"}</button>
+            <button type="button" className="ml-4 text-gray-400 underline" onClick={() => setEditMode(false)}>Annuler</button>
+          </form>
+        ) : (
+          <div className="flex justify-center mt-8">
+            <button className="bg-purple-600 text-white px-4 py-2 rounded" onClick={() => setEditMode(true)}>Modifier mon profil</button>
+          </div>
+        )}
       </main>
     </div>
   )

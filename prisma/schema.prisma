@@ -38,6 +38,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   videos    Video[]
+  // Champs custom profil creator
+  bio       String?
+  cover     String?
+  location  String?
+  website   String?
+  twitter   String?
+  instagram String?
+  birthdate DateTime?
+  isVerified Boolean @default(false)
+  customLinks String[]
 }
 
 model Account {
