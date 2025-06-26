@@ -123,13 +123,19 @@ export function Navigation() {
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </motion.button>
 
-          {session && (
+          {session ? (
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="w-full bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition"
             >
               Se déconnecter
             </button>
+          ) : (
+            <Link href="/auth/login">
+              <AnimatedButton variant="primary" size="sm">
+                Login
+              </AnimatedButton>
+            </Link>
           )}
         </div>
 
@@ -176,13 +182,19 @@ export function Navigation() {
                 <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
               </motion.button>
 
-              {session && (
+              {session ? (
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
                   className="w-full bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition"
                 >
                   Se déconnecter
                 </button>
+              ) : (
+                <Link href="/auth/login" className="w-full">
+                  <AnimatedButton variant="primary" size="sm" className="w-full">
+                    Login
+                  </AnimatedButton>
+                </Link>
               )}
             </div>
           </motion.div>

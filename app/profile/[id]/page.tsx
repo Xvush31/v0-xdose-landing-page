@@ -41,6 +41,8 @@ export default function PublicProfilePage() {
     return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
   }
 
+  const readyVideos = videos.filter((v: any) => v.status === "ready" && v.playbackId);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <main className="pt-20">
@@ -83,7 +85,7 @@ export default function PublicProfilePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            {videos.map((video: any, index: number) => (
+            {readyVideos.map((video: any, index: number) => (
               <motion.div
                 key={video.id}
                 className="group cursor-pointer"
@@ -93,7 +95,7 @@ export default function PublicProfilePage() {
                 whileHover={{ y: -5 }}
               >
                 <div className="relative overflow-hidden rounded-xl mb-3 group">
-                  <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} previewOnHover className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
+                  <VideoPlayer key={video.id} playbackId={video.playbackId} poster={video.thumbnail} className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
                   {/* Badge VIP */}
                   {index < 2 && (
                     <span className="absolute top-3 left-3 bg-gradient-to-r from-orange-400 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">VIP</span>

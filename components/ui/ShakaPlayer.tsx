@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, forwardRef } from "react";
 // @ts-ignore
 import * as shaka from "shaka-player/dist/shaka-player.compiled.js";
 
@@ -9,13 +9,13 @@ type ShakaPlayerProps = {
   controls?: boolean;
 };
 
-export const ShakaPlayer: React.FC<ShakaPlayerProps> = ({
+const ShakaPlayerComponent: React.ForwardRefRenderFunction<HTMLVideoElement, ShakaPlayerProps> = ({
   src,
   poster,
   autoPlay = false,
   controls = true,
-}) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+}, ref) => {
+  const videoRef = ref as React.RefObject<HTMLVideoElement>;
   const [aspectRatio, setAspectRatio] = useState<string>("16/9"); // Default
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export const ShakaPlayer: React.FC<ShakaPlayerProps> = ({
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       player.destroy();
     };
-  }, [src]);
+  }, [src, videoRef]);
 
   return (
     <div 
@@ -86,4 +86,6 @@ export const ShakaPlayer: React.FC<ShakaPlayerProps> = ({
       />
     </div>
   );
-}; 
+};
+
+export const ShakaPlayer = forwardRef(ShakaPlayerComponent); 

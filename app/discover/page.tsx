@@ -164,7 +164,7 @@ export default function DiscoverPage() {
                           whileHover={{ y: -5 }}
                         >
                           <div className="relative w-full h-48 group">
-                            <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} previewOnHover className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
+                            <VideoPlayer key={video.id} playbackId={video.playbackId} poster={video.thumbnail} className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
                             {/* Badge PPV */}
                             {index === 0 && (
                               <span className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">PPV</span>

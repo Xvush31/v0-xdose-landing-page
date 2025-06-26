@@ -154,7 +154,7 @@ export default function FeedPage() {
 
                     {/* Video Thumbnail */}
                     <div className="relative w-full h-64 group">
-                      <VideoPlayer playbackId={post.playbackId} poster={post.thumbnail} previewOnHover className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
+                      <VideoPlayer key={post.id} playbackId={post.playbackId} poster={post.thumbnail} className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
                       {/* Badge Nouveau */}
                       {index < 3 && (
                         <span className="absolute top-3 left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">Nouveau</span>

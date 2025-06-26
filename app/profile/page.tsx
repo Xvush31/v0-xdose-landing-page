@@ -338,7 +338,7 @@ export default function ProfilePage() {
                   whileHover={{ y: -5 }}
                 >
                   <div className="relative overflow-hidden rounded-xl mb-3">
-                    <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} />
+                    <VideoPlayer key={video.id} playbackId={video.playbackId} poster={video.thumbnail} />
                     {/* Overlay */}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                       <motion.div
