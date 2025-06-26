@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Search, Filter, TrendingUp, Clock, Heart } from "lucide-react"
+import { Search, Filter, TrendingUp, Clock, Heart, Play } from "lucide-react"
 import { Navigation } from "@/components/layout/navigation"
 import { ThemeProvider } from "@/components/theme-provider"
 import { VideoPlayer } from "@/components/ui/VideoPlayer"
@@ -163,8 +163,18 @@ export default function DiscoverPage() {
                           transition={{ delay: 0.4 + index * 0.1 }}
                           whileHover={{ y: -5 }}
                         >
-                          <div className="relative w-full h-48">
-                            <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} />
+                          <div className="relative w-full h-48 group">
+                            <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} previewOnHover className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
+                            {/* Badge PPV */}
+                            {index === 0 && (
+                              <span className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">PPV</span>
+                            )}
+                            {/* Overlay Play animé au hover */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-16 h-16 bg-black/60 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                                <Play className="w-8 h-8 text-white" />
+                              </div>
+                            </div>
                             <div className="absolute bottom-3 right-3 bg-black/70 px-2 py-1 rounded text-sm text-white">
                               --:--
                             </div>

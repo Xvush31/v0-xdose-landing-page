@@ -153,8 +153,18 @@ export default function FeedPage() {
                     </div>
 
                     {/* Video Thumbnail */}
-                    <div className="relative w-full h-64">
-                      <VideoPlayer playbackId={post.playbackId} poster={post.thumbnail} />
+                    <div className="relative w-full h-64 group">
+                      <VideoPlayer playbackId={post.playbackId} poster={post.thumbnail} previewOnHover className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
+                      {/* Badge Nouveau */}
+                      {index < 3 && (
+                        <span className="absolute top-3 left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">Nouveau</span>
+                      )}
+                      {/* Overlay Play animé au hover */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-16 h-16 bg-black/60 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                          <Play className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
                       <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-sm text-white">
                         {post.duration}
                       </div>

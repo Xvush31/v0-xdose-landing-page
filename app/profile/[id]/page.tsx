@@ -92,18 +92,18 @@ export default function PublicProfilePage() {
                 transition={{ delay: 0.6 + index * 0.1 }}
                 whileHover={{ y: -5 }}
               >
-                <div className="relative overflow-hidden rounded-xl mb-3">
-                  <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} />
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                    <motion.div
-                      className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      <Play className="w-5 h-5 ml-0.5" fill="white" />
-                    </motion.div>
+                <div className="relative overflow-hidden rounded-xl mb-3 group">
+                  <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} previewOnHover className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
+                  {/* Badge VIP */}
+                  {index < 2 && (
+                    <span className="absolute top-3 left-3 bg-gradient-to-r from-orange-400 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">VIP</span>
+                  )}
+                  {/* Overlay Play animé au hover */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-16 h-16 bg-black/60 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                      <Play className="w-8 h-8 text-white" />
+                    </div>
                   </div>
-                  {/* Duration (placeholder) */}
                   <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-sm">
                     --:--
                   </div>
