@@ -1,27 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { PaymentButton } from '@/components/ui/payment-button';
+
+const SUPPORTED_CRYPTOS = [
+  { code: 'usdt', name: 'USDT (Tether)', icon: '💎' },
+  { code: 'btc', name: 'Bitcoin', icon: '₿' },
+  { code: 'eth', name: 'Ethereum', icon: 'Ξ' },
+  { code: 'usdc', name: 'USDC', icon: '💎' },
+  { code: 'dai', name: 'DAI', icon: '💎' },
+  { code: 'matic', name: 'Polygon (MATIC)', icon: '🔷' },
+  { code: 'bnb', name: 'BNB', icon: '🟡' },
+  { code: 'sol', name: 'Solana', icon: '🟣' },
+];
 
 export default function TestPaymentPage() {
-  const { data: session } = useSession();
   const [amount, setAmount] = useState('10');
-  const [currency, setCurrency] = useState('usd');
-  const [creatorId, setCreatorId] = useState('test-creator');
-  const [paymentType, setPaymentType] = useState('tip');
-  const [loading, setLoading] = useState(false);
-  const [paymentData, setPaymentData] = useState<any>(null);
+  const [currency, setCurrency] = useState('usdt');
+  const [creatorId, setCreatorId] = useState('test-creator-123');
+  const [type, setType] = useState('tip');
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const createPayment = async () => {
-    if (!session?.user) {
-      setError('Vous devez être connecté');
-      return;
-    }
-
-    setLoading(true);
+  const handlePayment = async () => {
+    setIsLoading(true);
     setError(null);
-    setPaymentData(null);
+    setResult(null);
 
     try {
       const response = await fetch('/api/payments/nowpayments', {
@@ -33,213 +38,194 @@ export default function TestPaymentPage() {
           amount: parseFloat(amount),
           currency,
           creatorId,
-          type: paymentType,
+          type,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la création du paiement');
+        throw new Error(data.error || 'Payment creation failed');
       }
 
-      setPaymentData(data.payment);
-      console.log('Payment created:', data.payment);
+      setResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-      console.error('Payment error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
-
-  const checkPaymentStatus = async (paymentId: string) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/payments/nowpayments?payment_id=${paymentId}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la vérification du statut');
-      }
-
-      setPaymentData(data.payment);
-      console.log('Payment status:', data.payment);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-      console.error('Status check error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!session?.user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Test Paiements</h1>
-          <p className="text-gray-600">Vous devez être connecté pour tester les paiements.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Test Paiements NowPayments</h1>
-
-        {/* Formulaire de création de paiement */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Créer un Paiement</h2>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
+          <h1 className="text-4xl font-bold text-white mb-8 text-center">
+            🚀 Test Crypto Payments
+          </h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Montant
-              </label>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="10"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Devise
-              </label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="usd">USD</option>
-                <option value="eur">EUR</option>
-                <option value="btc">BTC</option>
-                <option value="eth">ETH</option>
-                <option value="usdt">USDT</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ID Créateur
-              </label>
-              <input
-                type="text"
-                value={creatorId}
-                onChange={(e) => setCreatorId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="test-creator"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Type de Paiement
-              </label>
-              <select
-                value={paymentType}
-                onChange={(e) => setPaymentType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="tip">Tip</option>
-                <option value="subscription">Abonnement</option>
-                <option value="ppv">Pay-Per-View</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            onClick={createPayment}
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Création en cours...' : 'Créer le Paiement'}
-          </button>
-        </div>
-
-        {/* Affichage des erreurs */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Affichage des données de paiement */}
-        {paymentData && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Détails du Paiement</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <p className="text-sm font-medium text-gray-700">ID Paiement</p>
-                <p className="text-sm text-gray-900 font-mono">{paymentData.id}</p>
-              </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Configuration Panel */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold text-white mb-4">
+                Configuration
+              </h2>
               
-              <div>
-                <p className="text-sm font-medium text-gray-700">Statut</p>
-                <p className="text-sm text-gray-900">{paymentData.paymentStatus}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium text-gray-700">Adresse de Paiement</p>
-                <p className="text-sm text-gray-900 font-mono break-all">{paymentData.payAddress}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium text-gray-700">Montant à Payer</p>
-                <p className="text-sm text-gray-900">{paymentData.payAmount} {paymentData.payCurrency}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium text-gray-700">Prix</p>
-                <p className="text-sm text-gray-900">{paymentData.priceAmount} {paymentData.priceCurrency}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium text-gray-700">Order ID</p>
-                <p className="text-sm text-gray-900 font-mono">{paymentData.orderId}</p>
-              </div>
-            </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Amount
+                  </label>
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="10"
+                  />
+                </div>
 
-            <div className="flex gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Crypto Currency
+                  </label>
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    {SUPPORTED_CRYPTOS.map((crypto) => (
+                      <option key={crypto.code} value={crypto.code}>
+                        {crypto.icon} {crypto.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Creator ID
+                  </label>
+                  <input
+                    type="text"
+                    value={creatorId}
+                    onChange={(e) => setCreatorId(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="creator-id"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Payment Type
+                  </label>
+                  <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="tip">Tip</option>
+                    <option value="subscription">Subscription</option>
+                    <option value="purchase">Purchase</option>
+                  </select>
+                </div>
+              </div>
+
               <button
-                onClick={() => checkPaymentStatus(paymentData.id)}
-                disabled={loading}
-                className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                onClick={handlePayment}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Vérification...' : 'Vérifier le Statut'}
-              </button>
-              
-              <button
-                onClick={() => {
-                  setPaymentData(null);
-                  setError(null);
-                }}
-                className="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              >
-                Effacer
+                {isLoading ? 'Creating Payment...' : 'Create Payment'}
               </button>
             </div>
-          </div>
-        )}
 
-        {/* Instructions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-8">
-          <h3 className="text-lg font-medium text-blue-900 mb-2">Instructions de Test</h3>
-          <ul className="text-blue-800 text-sm space-y-1">
-            <li>• Créez un paiement avec les paramètres souhaités</li>
-            <li>• Copiez l'adresse de paiement générée</li>
-            <li>• Utilisez un wallet crypto pour envoyer le montant exact</li>
-            <li>• Vérifiez le statut du paiement après envoi</li>
-            <li>• Les webhooks mettront à jour automatiquement le statut</li>
-          </ul>
+            {/* Results Panel */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold text-white mb-4">
+                Results
+              </h2>
+              
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+                  <h3 className="text-red-400 font-semibold mb-2">Error</h3>
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+
+              {result && (
+                <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
+                  <h3 className="text-green-400 font-semibold mb-4">
+                    ✅ Payment Created Successfully
+                  </h3>
+                  
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Payment ID:</span>
+                      <span className="text-white font-mono">{result.payment.id}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Pay Address:</span>
+                      <span className="text-white font-mono text-xs break-all">
+                        {result.payment.payAddress}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Pay Amount:</span>
+                      <span className="text-white">
+                        {result.payment.payAmount} {result.payment.payCurrency.toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Price Amount:</span>
+                      <span className="text-white">
+                        {result.payment.priceAmount} {result.payment.priceCurrency.toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Status:</span>
+                      <span className="text-yellow-400 capitalize">
+                        {result.payment.paymentStatus}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Order ID:</span>
+                      <span className="text-white font-mono text-xs">{result.payment.orderId}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-blue-500/20 border border-blue-500/50 rounded">
+                    <p className="text-blue-300 text-xs">
+                      💡 Send the exact amount to the address above. Payment will be confirmed automatically.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Supported Cryptos Info */}
+          <div className="mt-8 p-6 bg-white/5 rounded-lg border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              💎 Supported Cryptocurrencies
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {SUPPORTED_CRYPTOS.map((crypto) => (
+                <div
+                  key={crypto.code}
+                  className="flex items-center space-x-2 p-2 bg-white/10 rounded"
+                >
+                  <span className="text-lg">{crypto.icon}</span>
+                  <span className="text-white text-sm">{crypto.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

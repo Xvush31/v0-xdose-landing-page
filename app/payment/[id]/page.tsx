@@ -24,15 +24,24 @@ export default function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const paymentId = params.id as string;
+  const paymentId = params?.id as string;
 
   useEffect(() => {
     if (paymentId) {
       fetchPaymentData();
+    } else {
+      setError('ID de paiement manquant');
+      setLoading(false);
     }
   }, [paymentId]);
 
   const fetchPaymentData = async () => {
+    if (!paymentId) {
+      setError('ID de paiement manquant');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/payments/nowpayments?payment_id=${paymentId}`);
       const data = await response.json();
@@ -60,6 +69,8 @@ export default function PaymentPage() {
   };
 
   const checkStatus = async () => {
+    if (!paymentId) return;
+    
     setLoading(true);
     await fetchPaymentData();
   };

@@ -3,6 +3,20 @@ import { NextRequest, NextResponse } from 'next/server';
 const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY!;
 const NOWPAYMENTS_BASE_URL = 'https://api.nowpayments.io/v1';
 
+// Mapping des devises fiat vers cryptos supportées
+const CURRENCY_MAPPING: { [key: string]: string } = {
+  'usd': 'usdt', // USDT au lieu de USD
+  'eur': 'usdt', // USDT pour EUR aussi
+  'btc': 'btc',
+  'eth': 'eth',
+  'usdt': 'usdt',
+  'usdc': 'usdc',
+  'dai': 'dai',
+  'matic': 'matic', // Polygon
+  'bnb': 'bnb', // BNB
+  'sol': 'sol', // Solana
+};
+
 export async function POST(request: NextRequest) {
   try {
     // Vérification de l'API key
@@ -25,11 +39,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convertir la devise en crypto supportée
+    const payCurrency = CURRENCY_MAPPING[currency.toLowerCase()] || 'usdt';
+    
+    console.log(`Converting ${currency} to ${payCurrency} for payment`);
+
     // Création du paiement via NowPayments
     const paymentData = {
       price_amount: amount,
       price_currency: currency,
-      pay_currency: currency, // ou une crypto spécifique
+      pay_currency: payCurrency, // Utiliser la crypto supportée
       order_id: `xdose_${Date.now()}_${creatorId}`,
       order_description: `${type} payment to creator ${creatorId}`,
       ipn_callback_url: process.env.NOWPAYMENTS_WEBHOOK_URL || 'https://v0xdosette.vercel.app/api/webhooks/nowpayments',
