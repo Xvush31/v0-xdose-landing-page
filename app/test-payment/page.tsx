@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PaymentButton } from '@/components/ui/payment-button';
+import { CryptoSelector } from '@/components/ui/crypto-selector';
 
 const SUPPORTED_CRYPTOS = [
   { code: 'usdt', name: 'USDT (Tether)', icon: '💎' },
@@ -89,17 +89,10 @@ export default function TestPaymentPage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Crypto Currency
                   </label>
-                  <select
+                  <CryptoSelector
                     value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    {SUPPORTED_CRYPTOS.map((crypto) => (
-                      <option key={crypto.code} value={crypto.code}>
-                        {crypto.icon} {crypto.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setCurrency}
+                  />
                 </div>
 
                 <div>
