@@ -114,103 +114,12 @@ export default function FeedPage() {
               <div className="col-span-full text-center text-gray-400 py-12">Aucune vidéo disponible</div>
             ) : (
               <div className="space-y-8">
-                {readyPosts.map((post, index) => (
-                  <motion.article
-                    key={post.id}
-                    className="bg-card rounded-2xl overflow-hidden border border-border"
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    {/* Header */}
-                    <div className="p-4 flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={post.creator.avatar || "/placeholder.svg"}
-                          alt={post.creator.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <div className="flex items-center space-x-1">
-                            <h3 className="font-semibold text-foreground">{post.creator.name}</h3>
-                            {post.creator.verified && (
-                              <div className="w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
-                                <span className="text-xs text-white">✓</span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {post.creator.username} • {post.timestamp}
-                          </p>
-                          {post.creator.id && (
-                            <Link href={`/profile/${post.creator.id}`} className="text-purple-400 hover:underline text-xs font-medium">Voir le profil</Link>
-                          )}
-                        </div>
-                      </div>
-                      <button className="p-2 hover:bg-accent rounded-full transition-colors">
-                        <MoreHorizontal size={20} className="text-muted-foreground" />
-                      </button>
-                    </div>
-
-                    {/* Video Thumbnail */}
-                    <div className="relative w-full h-64 group">
-                      <VideoPlayer key={post.id} playbackId={post.playbackId} poster={post.thumbnail} className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
-                      {/* Badge Nouveau */}
-                      {index < 3 && (
-                        <span className="absolute top-3 left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">Nouveau</span>
-                      )}
-                      {/* Overlay Play animé au hover */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-16 h-16 bg-black/60 rounded-full flex items-center justify-center shadow-xl animate-pulse">
-                          <Play className="w-8 h-8 text-white" />
-                        </div>
-                      </div>
-                      <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-sm text-white">
-                        {post.duration}
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4">
-                      <h2 className="font-semibold mb-2 text-foreground">{post.title}</h2>
-                      <p className="text-sm text-muted-foreground mb-4">{post.views.toLocaleString()} views</p>
-
-                      {/* Actions */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-6">
-                          <motion.button
-                            className={`flex items-center space-x-2 ${
-                              post.isLiked ? "text-red-500" : "text-muted-foreground"
-                            } hover:text-red-400 transition-colors`}
-                            onClick={() => toggleLike(post.id)}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <Heart size={20} fill={post.isLiked ? "currentColor" : "none"} />
-                            <span className="text-sm">{post.likes}</span>
-                          </motion.button>
-
-                          <button className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
-                            <MessageCircle size={20} />
-                            <span className="text-sm">{post.comments}</span>
-                          </button>
-
-                          <button className="text-muted-foreground hover:text-foreground transition-colors">
-                            <Share size={20} />
-                          </button>
-                        </div>
-
-                        <motion.button
-                          className={`${
-                            post.isBookmarked ? "text-purple-500" : "text-muted-foreground"
-                          } hover:text-purple-400 transition-colors`}
-                          onClick={() => toggleBookmark(post.id)}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Bookmark size={20} fill={post.isBookmarked ? "currentColor" : "none"} />
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.article>
+                {readyPosts.map((post) => (
+                  <div key={post.id} className="w-full mb-6">
+                    <VideoPlayer playbackId={post.playbackId} poster={post.thumbnail} className="w-full" context="feed" />
+                    <h3 className="font-semibold mb-2 text-white">{post.title}</h3>
+                    <div className="text-gray-400 text-sm">{post.duration}</div>
+                  </div>
                 ))}
               </div>
             )}

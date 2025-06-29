@@ -164,20 +164,7 @@ export default function DiscoverPage() {
                           whileHover={{ y: -5 }}
                         >
                           <div className="relative w-full h-48 group">
-                            <VideoPlayer key={video.id} playbackId={video.playbackId} poster={video.thumbnail} className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105" />
-                            {/* Badge PPV */}
-                            {index === 0 && (
-                              <span className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">PPV</span>
-                            )}
-                            {/* Overlay Play animé au hover */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="w-16 h-16 bg-black/60 rounded-full flex items-center justify-center shadow-xl animate-pulse">
-                                <Play className="w-8 h-8 text-white" />
-                              </div>
-                            </div>
-                            <div className="absolute bottom-3 right-3 bg-black/70 px-2 py-1 rounded text-sm text-white">
-                              --:--
-                            </div>
+                            <VideoPlayer key={video.id} playbackId={video.playbackId} poster={video.thumbnail} className="w-full" />
                           </div>
                           <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition-colors text-foreground">
                             {video.title}

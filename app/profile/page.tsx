@@ -328,46 +328,12 @@ export default function ProfilePage() {
             {readyVideos.length === 0 ? (
               <div className="col-span-full text-center text-gray-400 py-12">Aucune vidéo disponible</div>
             ) : (
-              readyVideos.map((video, index) => (
-                <motion.div
-                  key={video.id}
-                  className="group cursor-pointer"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.1 + index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="relative overflow-hidden rounded-xl mb-3">
-                    <VideoPlayer key={video.id} playbackId={video.playbackId} poster={video.thumbnail} />
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                      <motion.div
-                        className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        whileHover={{ scale: 1.1 }}
-                      >
-                        <Play className="w-5 h-5 ml-0.5" fill="white" />
-                      </motion.div>
-                    </div>
-                    {/* Duration */}
-                    <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-sm">
-                      {video.duration}
-                    </div>
-                    {/* Private indicator */}
-                    {video.isPrivate && (
-                      <div className="absolute top-2 left-2 bg-purple-500 text-white px-2 py-1 rounded text-xs font-bold">
-                        VIP
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="font-semibold mb-2 group-hover:text-purple-400 transition-colors">{video.title}</h3>
-                  <span>{video.views} vues</span>
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-1">
-                      <Heart size={14} />
-                      <span>{video.likes}</span>
-                    </div>
-                  </div>
-                </motion.div>
+              readyVideos.map((video) => (
+                <div key={video.id} className="w-full mb-6">
+                  <VideoPlayer playbackId={video.playbackId} poster={video.thumbnail} className="w-full" context="profile" />
+                  <h3 className="font-semibold mb-2 text-white">{video.title}</h3>
+                  <div className="text-gray-400 text-sm">{video.createdAt}</div>
+                </div>
               ))
             )}
           </motion.div>

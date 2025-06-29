@@ -1,63 +1,39 @@
-import { ShakaPlayer } from "./ShakaPlayer";
-import { useRef, useEffect, useState, useCallback } from "react";
+import MuxPlayer from '@mux/mux-player-react';
 
-type VideoPlayerProps = {
-  playbackId?: string | null;
+interface VideoPlayerProps {
+  playbackId: string;
   poster?: string;
-  autoPlay?: boolean;
-  controls?: boolean;
   className?: string;
-};
+  autoPlay?: boolean;
+  context?: string;
+}
 
 export const VideoPlayer = ({
   playbackId,
   poster,
+  className = "",
   autoPlay = false,
-  controls = true,
-  className,
+  context = "unknown"
 }: VideoPlayerProps) => {
-  const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
-  const refCallback = useCallback((el: HTMLVideoElement | null) => {
-    if (el) setVideoEl(el);
-  }, []);
-  if (!playbackId) return <div>Vidéo non disponible</div>;
-  const src = `https://stream.mux.com/${playbackId}.m3u8`;
-
-  // Auto-pause des autres vidéos
-  useEffect(() => {
-    if (!videoEl) return;
-    const handlePauseOthers = (e: CustomEvent) => {
-      if (e.detail !== videoEl) {
-        videoEl.pause();
-      }
-    };
-    window.addEventListener('xdose-video-play', handlePauseOthers as EventListener);
-    return () => {
-      window.removeEventListener('xdose-video-play', handlePauseOthers as EventListener);
-    };
-  }, [videoEl]);
-
-  // Dispatch event quand la vidéo est jouée
-  useEffect(() => {
-    if (!videoEl) return;
-    const onPlay = () => {
-      window.dispatchEvent(new CustomEvent('xdose-video-play', { detail: videoEl }));
-    };
-    videoEl.addEventListener('play', onPlay);
-    return () => {
-      videoEl.removeEventListener('play', onPlay);
-    };
-  }, [playbackId, videoEl]);
-
+  console.log("[VideoPlayer] render", { playbackId, context });
   return (
-    <div className={className}>
-      <ShakaPlayer
-        ref={refCallback}
-        src={src}
+    <div className={`relative group overflow-hidden rounded-xl ${className}`}>
+      <MuxPlayer
+        playbackId={playbackId}
         poster={poster}
         autoPlay={autoPlay}
-        controls={controls}
+        streamType="on-demand"
+        accentColor="#a21caf"
+        metadata={{
+          video_title: 'Vidéo Xdose',
+          viewer_user_id: 'anonymous',
+        }}
+        className="w-full aspect-video object-cover"
       />
+      {/* Badge VIP */}
+      <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-semibold shadow-lg">
+        VIP
+      </div>
     </div>
   );
-}; 
+} 
