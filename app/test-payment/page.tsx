@@ -19,6 +19,7 @@ export default function TestPaymentPage() {
   const [currency, setCurrency] = useState('usdt');
   const [creatorId, setCreatorId] = useState('test-creator-123');
   const [type, setType] = useState('tip');
+  const [isTestMode, setIsTestMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export default function TestPaymentPage() {
           currency,
           creatorId,
           type,
+          isTest: isTestMode,
         }),
       });
 
@@ -63,6 +65,29 @@ export default function TestPaymentPage() {
           <h1 className="text-4xl font-bold text-white mb-8 text-center">
             🚀 Test Crypto Payments
           </h1>
+          
+          <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-blue-300 font-semibold">🧪 Test Mode</h3>
+                <p className="text-blue-200 text-sm">
+                  {isTestMode 
+                    ? "Simule les paiements sans appeler l'API NowPayments" 
+                    : "Utilise l'API NowPayments réelle"
+                  }
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isTestMode}
+                  onChange={(e) => setIsTestMode(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
           
           <div className="grid md:grid-cols-2 gap-8">
             {/* Configuration Panel */}
@@ -129,7 +154,7 @@ export default function TestPaymentPage() {
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Creating Payment...' : 'Create Payment'}
+                {isLoading ? 'Creating Payment...' : `Create ${isTestMode ? 'Test ' : ''}Payment`}
               </button>
             </div>
 
@@ -148,9 +173,21 @@ export default function TestPaymentPage() {
 
               {result && (
                 <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
-                  <h3 className="text-green-400 font-semibold mb-4">
-                    ✅ Payment Created Successfully
-                  </h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-green-400 font-semibold">
+                      ✅ Payment Created Successfully
+                    </h3>
+                    {result.isTest && (
+                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                        🧪 TEST MODE
+                      </span>
+                    )}
+                    {result.fallbackUsed && (
+                      <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                        🔄 FALLBACK
+                      </span>
+                    )}
+                  </div>
                   
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
@@ -192,11 +229,19 @@ export default function TestPaymentPage() {
                     </div>
                   </div>
                   
-                  <div className="mt-4 p-3 bg-blue-500/20 border border-blue-500/50 rounded">
-                    <p className="text-blue-300 text-xs">
-                      💡 Send the exact amount to the address above. Payment will be confirmed automatically.
-                    </p>
-                  </div>
+                  {result.isTest ? (
+                    <div className="mt-4 p-3 bg-blue-500/20 border border-blue-500/50 rounded">
+                      <p className="text-blue-300 text-xs">
+                        🧪 Ceci est un paiement de test simulé. Aucune transaction réelle n'a été créée.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-4 p-3 bg-blue-500/20 border border-blue-500/50 rounded">
+                      <p className="text-blue-300 text-xs">
+                        💡 Send the exact amount to the address above. Payment will be confirmed automatically.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
