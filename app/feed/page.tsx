@@ -65,12 +65,12 @@ export default function FeedPage() {
             }))
           )
         } else {
-          setError("Erreur lors de la récupération des vidéos")
+          setError("Erreur lors de the recovery of videos")
         }
         setLoading(false)
       })
       .catch(() => {
-        setError("Erreur lors de la récupération des vidéos")
+        setError("Erreur lors de the recovery of videos")
         setLoading(false)
       })
   }, [])
@@ -107,11 +107,11 @@ export default function FeedPage() {
             </motion.h1>
 
             {loading ? (
-              <div className="text-center py-12">Chargement...</div>
+              <div className="text-center py-12">Loading...</div>
             ) : error ? (
               <div className="text-center text-red-500 py-12">{error}</div>
             ) : readyPosts.length === 0 ? (
-              <div className="col-span-full text-center text-gray-400 py-12">Aucune vidéo disponible</div>
+              <div className="col-span-full text-center text-gray-400 py-12">No video available</div>
             ) : (
               <div className="space-y-8">
                 {readyPosts.map((post) => (

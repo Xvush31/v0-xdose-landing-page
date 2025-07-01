@@ -135,7 +135,7 @@ export function CryptoSelector({ value, onChangeAction, className = '' }: Crypto
             <div className="p-3 border-b border-white/10">
               <input
                 type="text"
-                placeholder="Rechercher une crypto..."
+                placeholder="Search a crypto..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
@@ -146,7 +146,7 @@ export function CryptoSelector({ value, onChangeAction, className = '' }: Crypto
             <div className="max-h-60 overflow-y-auto">
               {filteredCryptos.length === 0 ? (
                 <div className="p-4 text-center text-gray-400">
-                  Aucune crypto trouvée
+                  No crypto found
                 </div>
               ) : (
                 filteredCryptos.map((crypto) => {

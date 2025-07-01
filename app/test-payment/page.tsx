@@ -124,8 +124,8 @@ export default function TestPaymentPage() {
                 <h3 className="text-blue-300 font-semibold">🧪 Test Mode</h3>
                 <p className="text-blue-200 text-sm">
                   {isTestMode 
-                    ? "Simule les paiements sans appeler l'API NowPayments" 
-                    : "Utilise l'API NowPayments réelle"
+                    ? "Simulate payments without calling the NowPayments API" 
+                    : "Use the NowPayments API"
                   }
                 </p>
               </div>
@@ -281,12 +281,12 @@ export default function TestPaymentPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                           <span>Payment confirmed!</span>
-                          <span className="text-white text-lg font-bold mt-2">🎉 Merci pour votre soutien !</span>
+                          <span className="text-white text-lg font-bold mt-2">🎉 Thank you for your support!</span>
                           <button
                             className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg shadow transition-all"
                             onClick={() => window.location.href = '/'}
                           >
-                            Retour à l'accueil
+                            Return to home
                           </button>
                         </motion.div>
                       )}
@@ -350,7 +350,7 @@ export default function TestPaymentPage() {
                   {result.isTest ? (
                     <div className="mt-4 p-3 bg-blue-500/20 border border-blue-500/50 rounded">
                       <p className="text-blue-300 text-xs">
-                        🧪 Ceci est un paiement de test simulé. Aucune transaction réelle n'a été créée.
+                        🧪 This is a simulated test payment. No real transactions were created.
                       </p>
                     </div>
                   ) : (

@@ -31,16 +31,16 @@ export default function ProfilePage() {
   const [editingField, setEditingField] = useState<string | null>(null)
 
   const tabs = [
-    { id: "videos", label: "Vidéos", count: profile?.stats?.videos || "0" },
+    { id: "videos", label: "Videos", count: profile?.stats?.videos || "0" },
     { id: "photos", label: "Photos", count: "89" },
     { id: "live", label: "Lives", count: "12" },
-    { id: "about", label: "À propos", count: "" },
+    { id: "about", label: "About", count: "" },
   ]
 
   useEffect(() => {
     if (status === "loading") return
     if (!user?.id) {
-      setError("Utilisateur non connecté")
+      setError("User not logged in")
       setLoading(false)
       return
     }
@@ -52,12 +52,12 @@ export default function ProfilePage() {
           setProfile(data.user)
           setVideos(data.user.videos || [])
         } else {
-          setError(typeof data.error === "string" ? data.error : "Erreur lors de la récupération du profil")
+          setError(typeof data.error === "string" ? data.error : "Error retrieving profile")
         }
         setLoading(false)
       })
       .catch((e) => {
-        setError(e instanceof Error ? e.message : "Erreur lors de la récupération du profil")
+        setError(e instanceof Error ? e.message : "Error retrieving profile")
         setLoading(false)
       })
   }, [user, status])
@@ -130,7 +130,7 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-white">Chargement...</div>
+    return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
   }
   if (error) {
     return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
@@ -161,7 +161,7 @@ export default function ProfilePage() {
                   tabIndex={0}
                   onKeyDown={e => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}
                   role="button"
-                  aria-label="Changer la photo de profil"
+                  aria-label="Change profile photo"
                 >
                   <img
                     src={profile?.image || "/placeholder.svg"}
@@ -171,7 +171,7 @@ export default function ProfilePage() {
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center rounded-full transition-opacity pointer-events-none">
                     <Pencil className="w-6 h-6 text-white mb-1" />
-                    <span className="text-white text-xs">Changer la photo de profil</span>
+                    <span className="text-white text-xs">Change profile photo</span>
                     {uploadingImage === "image" && (
                       <span className="text-xs text-purple-300 mt-2 animate-pulse">Upload...</span>
                     )}
@@ -201,7 +201,7 @@ export default function ProfilePage() {
                             onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("name", (e.target as HTMLInputElement).value) }}}
                           />
                         ) : (
-                          <span className="text-3xl md:text-4xl font-bold mb-2 cursor-pointer group" onClick={() => setEditingField("name")}>{form.name || <span className="text-gray-400">Nom</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+                          <span className="text-3xl md:text-4xl font-bold mb-2 cursor-pointer group" onClick={() => setEditingField("name")}>{form.name || <span className="text-gray-400">Name</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
                         )}
                       </div>
                       <p className="text-gray-400 text-lg mb-4">{profile?.username}</p>
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                     <div className="flex items-center space-x-3">
                       {user?.id !== profile?.id && (
                         <AnimatedButton variant="primary" size="md">
-                          S'abonner
+                          Subscribe
                         </AnimatedButton>
                       )}
                       <motion.button
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                       onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("bio", (e.target as HTMLTextAreaElement).value) }}}
                     />
                   ) : (
-                    <span className="text-gray-300 cursor-pointer group" onClick={() => setEditingField("bio")}>{form.bio || <span className="text-gray-500">Ajouter une bio</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+                    <span className="text-gray-300 cursor-pointer group" onClick={() => setEditingField("bio")}>{form.bio || <span className="text-gray-500">Add a bio</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
                   )}
                 </div>
 
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex items-center space-x-1">
                     <Calendar size={16} />
-                    <span>Rejoint en {profile?.joinDate}</span>
+                    <span>Joined in {profile?.joinDate}</span>
                   </div>
                 </div>
               </motion.div>
@@ -326,7 +326,7 @@ export default function ProfilePage() {
             transition={{ delay: 1 }}
           >
             {readyVideos.length === 0 ? (
-              <div className="col-span-full text-center text-gray-400 py-12">Aucune vidéo disponible</div>
+              <div className="col-span-full text-center text-gray-400 py-12">No video available</div>
             ) : (
               readyVideos.map((video) => (
                 <div key={video.id} className="w-full mb-6">
@@ -351,7 +351,7 @@ export default function ProfilePage() {
               onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("location", (e.target as HTMLInputElement).value) }}}
             />
           ) : (
-            <span className="text-gray-400 cursor-pointer group" onClick={() => setEditingField("location")}>{form.location || <span className="text-gray-500">Ajouter une localisation</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+            <span className="text-gray-400 cursor-pointer group" onClick={() => setEditingField("location")}>{form.location || <span className="text-gray-500">Add a location</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
           )}
         </div>
         <div className="mt-2 text-center">
@@ -365,7 +365,7 @@ export default function ProfilePage() {
               onKeyDown={e => { if (e.key === "Enter") { handleFieldSave("website", (e.target as HTMLInputElement).value) }}}
             />
           ) : (
-            <span className="text-purple-400 cursor-pointer group" onClick={() => setEditingField("website")}>{form.website || <span className="text-gray-500">Ajouter un site web</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
+            <span className="text-purple-400 cursor-pointer group" onClick={() => setEditingField("website")}>{form.website || <span className="text-gray-500">Add a website</span>} <Pencil className="inline w-4 h-4 text-purple-400 opacity-60 group-hover:opacity-100" /></span>
           )}
         </div>
       </main>

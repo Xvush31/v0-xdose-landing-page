@@ -142,7 +142,7 @@ export default function ProfilePage() {
                 <div className="flex items-center space-x-6 text-sm text-gray-400">
                   <div className="flex items-center space-x-2">
                     <Eye className="w-4 h-4" />
-                    <span>{profile.videos.length} vidéos</span>
+                    <span>{profile.videos.length} videos</span>
                   </div>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export default function ProfilePage() {
                   </div>
                   <h3 className="font-semibold mb-2 text-white">{video.title}</h3>
                   <p className="text-gray-400 text-sm">
-                    {new Date(video.createdAt).toLocaleDateString('fr-FR')}
+                    {new Date(video.createdAt).toLocaleDateString('en-US')}
                   </p>
                 </motion.div>
               ))}
@@ -187,7 +187,7 @@ export default function ProfilePage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <p className="text-gray-400 text-lg">Aucune vidéo disponible</p>
+              <p className="text-gray-400 text-lg">No videos available</p>
             </motion.div>
           )}
         </div>

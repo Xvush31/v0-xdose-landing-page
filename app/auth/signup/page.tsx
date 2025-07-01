@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, User, Video, ArrowLeft, Mail, Lock, UserCheck } from "lucide-react"
 import { AnimatedButton } from "@/components/ui/animated-button"
@@ -32,6 +32,15 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [profile, setProfile] = useState({
+    username: "",
+    bio: "",
+    avatar: "",
+    twitter: "",
+    instagram: "",
+    wallet: "",
+  })
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (status === "loading") return
@@ -50,6 +59,19 @@ export default function SignUpPage() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }))
+  }
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, files } = e.target as any;
+    if (name === "avatar" && files && files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setProfile((prev) => ({ ...prev, avatar: ev.target?.result as string }));
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      setProfile((prev) => ({ ...prev, [name]: value }));
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -208,219 +230,266 @@ export default function SignUpPage() {
                 <p className="text-muted-foreground">Create your account and start your journey</p>
               </motion.div>
 
-              <AnimatePresence mode="wait">
-                {!userType ? (
-                  <motion.div
-                    key="user-type-selection"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-4"
+              {/* Choix créateur/fan */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-center mb-4 text-white">Sign up as :</h2>
+                <div className="flex gap-4 justify-center">
+                  <motion.button
+                    type="button"
+                    onClick={() => setUserType("creator")}
+                    className={`flex flex-col items-center px-6 py-4 rounded-xl border-2 transition-all duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white font-semibold text-lg gap-2 ${
+                      userType === "creator"
+                        ? "bg-gradient-to-br from-purple-600 to-pink-500 border-purple-500 scale-105"
+                        : "bg-white/10 border-white/20 hover:scale-105"
+                    }`}
+                    whileTap={{ scale: 0.97 }}
+                    animate={{ scale: userType === "creator" ? 1.05 : 1 }}
                   >
-                    <h2 className="text-xl font-semibold text-center mb-6">Choose your account type</h2>
+                    <Video className="w-8 h-8 mb-1" />
+                    Creator
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    onClick={() => setUserType("viewer")}
+                    className={`flex flex-col items-center px-6 py-4 rounded-xl border-2 transition-all duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white font-semibold text-lg gap-2 ${
+                      userType === "viewer"
+                        ? "bg-gradient-to-br from-blue-600 to-indigo-500 border-blue-500 scale-105"
+                        : "bg-white/10 border-white/20 hover:scale-105"
+                    }`}
+                    whileTap={{ scale: 0.97 }}
+                    animate={{ scale: userType === "viewer" ? 1.05 : 1 }}
+                  >
+                    <User className="w-8 h-8 mb-1" />
+                    Fan
+                  </motion.button>
+                </div>
+              </div>
 
-                    <motion.button
-                      onClick={() => setUserType("creator")}
-                      className="w-full p-6 rounded-xl border-2 border-border/50 hover:border-purple-500 bg-card/50 hover:bg-card/80 transition-all duration-300 group relative overflow-hidden"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center">
-                          <Video className="text-white" size={24} />
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-semibold text-lg">Creator</h3>
-                          <p className="text-muted-foreground text-sm">Upload and monetize your content</p>
-                        </div>
-                      </div>
-                    </motion.button>
-
-                    <motion.button
-                      onClick={() => setUserType("viewer")}
-                      className="w-full p-6 rounded-xl border-2 border-border/50 hover:border-orange-500 bg-card/50 hover:bg-card/80 transition-all duration-300 group relative overflow-hidden"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center">
-                          <User className="text-white" size={24} />
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-semibold text-lg">Viewer</h3>
-                          <p className="text-muted-foreground text-sm">Discover and enjoy premium content</p>
-                        </div>
-                      </div>
-                    </motion.button>
-                  </motion.div>
-                ) : (
-                  <motion.div
+              {/* Formulaire animé selon le choix */}
+              <AnimatePresence>
+                {userType && (
+                  <motion.form
                     key="signup-form"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
+                    exit={{ opacity: 0, y: 30 }}
+                    transition={{ duration: 0.25 }}
+                    onSubmit={handleSubmit}
+                    className="space-y-6 mt-2"
                   >
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            userType === "creator"
-                              ? "bg-gradient-to-br from-purple-400 to-pink-500"
-                              : "bg-gradient-to-br from-orange-400 to-pink-500"
-                          }`}
-                        >
-                          {userType === "creator" ? (
-                            <Video className="text-white" size={16} />
-                          ) : (
-                            <User className="text-white" size={16} />
-                          )}
-                        </div>
-                        <span className="font-medium capitalize">{userType} Account</span>
-                      </div>
-                      <button
-                        onClick={() => setUserType(null)}
-                        className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                      >
-                        Change
-                      </button>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <div className="relative">
-                          <Mail
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                            size={16}
-                          />
-                          <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="Enter your email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            className="pl-10"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="username">Username</Label>
-                        <div className="relative">
-                          <UserCheck
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                            size={16}
-                          />
-                          <Input
-                            id="username"
-                            name="username"
-                            type="text"
-                            placeholder="Choose a username"
-                            value={formData.username}
-                            onChange={handleInputChange}
-                            className="pl-10"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <div className="relative">
-                          <Lock
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                            size={16}
-                          />
-                          <Input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Create a password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            className="pl-10 pr-10"
-                            required
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          >
-                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm Password</Label>
-                        <div className="relative">
-                          <Lock
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                            size={16}
-                          />
-                          <Input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirm your password"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            className="pl-10 pr-10"
-                            required
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          >
-                            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="agreeToTerms"
-                          name="agreeToTerms"
-                          checked={formData.agreeToTerms}
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <div className="relative">
+                        <Mail
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                          size={16}
+                        />
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={formData.email}
                           onChange={handleInputChange}
-                          className="rounded border-border"
+                          className="pl-10"
                           required
                         />
-                        <Label htmlFor="agreeToTerms" className="text-sm">
-                          I agree to the{" "}
-                          <Link href="/terms" className="text-primary hover:underline">
-                            Terms of Service
-                          </Link>{" "}
-                          and{" "}
-                          <Link href="/privacy" className="text-primary hover:underline">
-                            Privacy Policy
-                          </Link>
-                        </Label>
                       </div>
+                    </div>
 
-                      {/* Affichage des erreurs ou succès */}
-                      {error && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-red-500 text-center">
-                          {error}
-                        </motion.div>
+                    <div className="space-y-2">
+                      <Label htmlFor="username">Username</Label>
+                      <Input
+                        id="username"
+                        name="username"
+                        type="text"
+                        required
+                        value={profile.username}
+                        onChange={handleProfileChange}
+                        placeholder="Your unique username"
+                        autoComplete="off"
+                        className="mb-2"
+                      />
+                      <Label htmlFor="avatar">Profile picture</Label>
+                      <div className="flex items-center gap-3 mb-2">
+                        <input
+                          ref={fileInputRef}
+                          id="avatar"
+                          name="avatar"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleProfileChange}
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-3 py-1 bg-purple-600 text-white rounded shadow hover:bg-purple-700"
+                        >
+                          {profile.avatar ? "Change" : "Choose an image"}
+                        </button>
+                        {profile.avatar && (
+                          <img src={profile.avatar} alt="avatar preview" className="w-10 h-10 rounded-full object-cover border-2 border-purple-400" />
+                        )}
+                      </div>
+                      <Label htmlFor="bio">Short bio</Label>
+                      <textarea
+                        id="bio"
+                        name="bio"
+                        value={profile.bio}
+                        onChange={handleProfileChange}
+                        placeholder="Describe yourself in one sentence..."
+                        className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                        maxLength={120}
+                        rows={2}
+                      />
+                      {userType === "creator" && (
+                        <>
+                          <Label htmlFor="twitter">Twitter</Label>
+                          <Input
+                            id="twitter"
+                            name="twitter"
+                            type="text"
+                            value={profile.twitter}
+                            onChange={handleProfileChange}
+                            placeholder="@tonpseudo"
+                            className="mb-2"
+                          />
+                          <Label htmlFor="instagram">Instagram</Label>
+                          <Input
+                            id="instagram"
+                            name="instagram"
+                            type="text"
+                            value={profile.instagram}
+                            onChange={handleProfileChange}
+                            placeholder="@tonpseudo"
+                            className="mb-2"
+                          />
+                          <Label htmlFor="wallet">Payout wallet (optional)</Label>
+                          <Input
+                            id="wallet"
+                            name="wallet"
+                            type="text"
+                            value={profile.wallet}
+                            onChange={handleProfileChange}
+                            placeholder="0x..."
+                            className="mb-2"
+                          />
+                        </>
                       )}
-                      {success && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-green-500 text-center">
-                          Account created! Redirecting...
-                        </motion.div>
-                      )}
+                    </div>
 
-                      <AnimatedButton type="submit" variant="primary" size="lg" className="w-full" disabled={loading}>
-                        {loading ? "Creating..." : "Create Account"}
-                      </AnimatedButton>
-                    </form>
-                  </motion.div>
+                    {/* Preview profil en temps réel */}
+                    <div className="mt-6 flex flex-col items-center bg-white/5 rounded-xl p-4 border border-white/10">
+                      <span className="text-gray-400 text-xs mb-2">Profile preview</span>
+                      <img
+                        src={profile.avatar || "/placeholder-user.jpg"}
+                        alt="avatar preview"
+                        className="w-16 h-16 rounded-full object-cover border-2 border-purple-400 mb-2"
+                      />
+                      <div className="text-lg font-bold text-white">{profile.username || "Username"}</div>
+                      <div className="text-sm text-gray-300 mb-1">{profile.bio || "Your short bio will appear here"}</div>
+                      {userType === "creator" && (
+                        <div className="flex gap-2 mt-1">
+                          {profile.twitter && <span className="text-blue-400">@{profile.twitter}</span>}
+                          {profile.instagram && <span className="text-pink-400">@{profile.instagram}</span>}
+                          {profile.wallet && <span className="text-green-400">{profile.wallet.slice(0, 8)}...</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <div className="relative">
+                        <Lock
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                          size={16}
+                        />
+                        <Input
+                          id="password"
+                          name="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Create a password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          className="pl-10 pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <div className="relative">
+                        <Lock
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                          size={16}
+                        />
+                        <Input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
+                          value={formData.confirmPassword}
+                          onChange={handleInputChange}
+                          className="pl-10 pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="agreeToTerms"
+                        name="agreeToTerms"
+                        checked={formData.agreeToTerms}
+                        onChange={handleInputChange}
+                        className="rounded border-border"
+                        required
+                      />
+                      <Label htmlFor="agreeToTerms" className="text-sm">
+                        I agree to the{" "}
+                        <Link href="/terms" className="text-primary hover:underline">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="/privacy" className="text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                      </Label>
+                    </div>
+
+                    {/* Affichage des erreurs ou succès */}
+                    {error && (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-red-500 text-center">
+                        {error}
+                      </motion.div>
+                    )}
+                    {success && (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-green-500 text-center">
+                        Account created! Redirecting...
+                      </motion.div>
+                    )}
+
+                    <AnimatedButton type="submit" variant="primary" size="lg" className="w-full" disabled={loading}>
+                      {loading ? "Creating..." : "Create Account"}
+                    </AnimatedButton>
+                  </motion.form>
                 )}
               </AnimatePresence>
 

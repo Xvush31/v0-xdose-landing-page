@@ -30,14 +30,14 @@ export default function PaymentPage() {
     if (paymentId) {
       fetchPaymentData();
     } else {
-      setError('ID de paiement manquant');
+      setError('ID of payment missing');
       setLoading(false);
     }
   }, [paymentId]);
 
   const fetchPaymentData = async () => {
     if (!paymentId) {
-      setError('ID de paiement manquant');
+      setError('ID of payment missing');
       setLoading(false);
       return;
     }
@@ -47,12 +47,12 @@ export default function PaymentPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Paiement non trouvé');
+        throw new Error(data.error || 'Payment not found');
       }
 
       setPaymentData(data.payment);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -79,8 +79,8 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Paiement</h1>
-          <p className="text-gray-600">Vous devez être connecté pour accéder à cette page.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Payment</h1>
+          <p className="text-gray-600">You must be logged in to access this page.</p>
         </div>
       </div>
     );
@@ -95,7 +95,7 @@ export default function PaymentPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span className="ml-3 text-gray-700">Chargement du paiement...</span>
+            <span className="ml-3 text-gray-700">Loading payment...</span>
           </div>
         </div>
       </div>
@@ -106,13 +106,13 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Erreur</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
           <p className="text-red-600 mb-4">{error}</p>
           <button
             onClick={() => window.history.back()}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Retour
+            Back
           </button>
         </div>
       </div>
@@ -123,12 +123,12 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Paiement non trouvé</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Payment not found</h1>
           <button
             onClick={() => window.history.back()}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Retour
+            Back
           </button>
         </div>
       </div>
@@ -157,17 +157,17 @@ export default function PaymentPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'waiting':
-        return 'En attente de paiement';
+        return 'Waiting for payment';
       case 'confirming':
-        return 'Paiement en cours de confirmation';
+        return 'Payment is being confirmed';
       case 'confirmed':
-        return 'Paiement confirmé';
+        return 'Payment confirmed';
       case 'finished':
-        return 'Paiement terminé';
+        return 'Payment finished';
       case 'failed':
-        return 'Paiement échoué';
+        return 'Payment failed';
       case 'expired':
-        return 'Paiement expiré';
+        return 'Payment expired';
       default:
         return status;
     }
@@ -178,46 +178,46 @@ export default function PaymentPage() {
       <div className="max-w-2xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Paiement Crypto</h1>
-            <p className="text-gray-600">Complétez votre paiement en envoyant la crypto exacte</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Crypto Payment</h1>
+            <p className="text-gray-600">Complete your payment by sending the exact crypto</p>
           </div>
 
-          {/* Statut du paiement */}
+          {/* Payment status */}
           <div className="mb-8">
             <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(paymentData.paymentStatus)}`}>
               {getStatusText(paymentData.paymentStatus)}
             </div>
           </div>
 
-          {/* Détails du paiement */}
+          {/* Payment details */}
           <div className="bg-gray-50 rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Détails du Paiement</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Details</h2>
             
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-gray-600">Montant à payer:</span>
+                <span className="text-gray-600">Amount to pay:</span>
                 <span className="font-semibold text-gray-900">
                   {paymentData.payAmount} {paymentData.payCurrency.toUpperCase()}
                 </span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600">Prix:</span>
+                <span className="text-gray-600">Price:</span>
                 <span className="font-semibold text-gray-900">
                   {paymentData.priceAmount} {paymentData.priceCurrency.toUpperCase()}
                 </span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600">ID Paiement:</span>
+                <span className="text-gray-600">Payment ID:</span>
                 <span className="font-mono text-sm text-gray-900">{paymentData.id}</span>
               </div>
             </div>
           </div>
 
-          {/* Adresse de paiement */}
+          {/* Payment address */}
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Adresse de Paiement</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Address</h2>
             
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
@@ -228,7 +228,7 @@ export default function PaymentPage() {
                   onClick={() => copyToClipboard(paymentData.payAddress)}
                   className="ml-4 px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {copied ? 'Copié !' : 'Copier'}
+                  {copied ? 'Copied!' : 'Copy'}
                 </button>
               </div>
             </div>
@@ -238,11 +238,11 @@ export default function PaymentPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h3 className="text-lg font-medium text-blue-900 mb-3">Instructions</h3>
             <ol className="text-blue-800 text-sm space-y-2">
-              <li>1. Copiez l'adresse de paiement ci-dessus</li>
-              <li>2. Ouvrez votre wallet crypto (Metamask, etc.)</li>
-              <li>3. Envoyez exactement <strong>{paymentData.payAmount} {paymentData.payCurrency.toUpperCase()}</strong></li>
-              <li>4. Attendez la confirmation (peut prendre quelques minutes)</li>
-              <li>5. Le statut sera mis à jour automatiquement</li>
+              <li>1. Copy the payment address above</li>
+              <li>2. Open your crypto wallet (Metamask, etc.)</li>
+              <li>3. Send exactly <strong>{paymentData.payAmount} {paymentData.payCurrency.toUpperCase()}</strong></li>
+              <li>4. Wait for confirmation (can take a few minutes)</li>
+              <li>5. The status will be updated automatically</li>
             </ol>
           </div>
 
@@ -253,22 +253,22 @@ export default function PaymentPage() {
               disabled={loading}
               className="flex-1 bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
             >
-              {loading ? 'Vérification...' : 'Vérifier le Statut'}
+              {loading ? 'Checking...' : 'Check Status'}
             </button>
             
             <button
               onClick={() => window.history.back()}
               className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
-              Retour
+              Back
             </button>
           </div>
 
-          {/* Note importante */}
+          {/* Important note */}
           <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-yellow-800 text-sm">
-              <strong>Important:</strong> Envoyez exactement le montant demandé. 
-              Tout montant différent ne sera pas accepté et pourrait être perdu.
+              <strong>Important:</strong> Send exactly the amount requested. 
+              Any other amount will not be accepted and could be lost.
             </p>
           </div>
         </div>
