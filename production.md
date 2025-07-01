@@ -217,7 +217,30 @@ Ce document détaille les tâches restantes pour passer l'application en product
 
 <!-- Ici, je place toute la partie ambition, différenciation, crypto, IA, acquisition, stratégie, etc. (éléments de la version enrichie, business, etc.) -->
 
-// ... (contenu vision business & différenciation) ...
+# 🚧 Flow onboarding ultra-rapide (créateur/fan)
+
+## Objectif
+Permettre à tout nouvel utilisateur (créateur ou fan) de s'inscrire, créer son profil et être opérationnel en moins de 2 minutes, sur mobile comme desktop, sans friction.
+
+## Étapes réalisées
+- [x] Choix créateur/fan visuel et animé (UX premium, feedback immédiat)
+- [x] Formulaire animé selon le choix (apparition/disparition smooth)
+- [x] Inputs profil express : pseudo, photo de profil (upload), bio courte
+- [x] Inputs spécifiques créateur : réseaux sociaux, wallet de paiement (optionnel)
+- [x] Preview du profil en temps réel sous le formulaire
+- [x] Feedback UX moderne, mobile first, différenciation créateur/fan
+
+## Prochaines étapes
+- [ ] Finaliser la sauvegarde du profil (envoi des nouveaux champs à l'API lors de l'inscription)
+- [ ] Validation instantanée (pseudo unique, format wallet, etc.)
+- [ ] Flow guidé post-inscription (checklist, call-to-action, onboarding progressif)
+- [ ] Sauvegarde progressive (draft profil/contenu)
+
+## Résumé UX
+- L'utilisateur choisit son rôle (créateur/fan) via deux gros boutons animés
+- Il remplit un formulaire express avec preview live de son profil
+- Le flow est 100% responsive, rapide, et engageant
+- L'expérience est différenciée selon le rôle (créateur = plus d'options, fan = ultra-light)
 
 ---
 
