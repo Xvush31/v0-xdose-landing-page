@@ -1,7 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CryptoSelector } from '@/components/ui/crypto-selector';
+import { AmountInput } from '@/components/ui/amount-input';
+import { PaymentQRCode } from '@/components/ui/payment-qr-code';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 
 const SUPPORTED_CRYPTOS = [
   { code: 'usdt', name: 'USDT (Tether)', icon: '💎' },
@@ -23,6 +27,10 @@ export default function TestPaymentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasCelebrated, setHasCelebrated] = useState(false);
 
   const handlePayment = async () => {
     setIsLoading(true);
@@ -57,6 +65,50 @@ export default function TestPaymentPage() {
       setIsLoading(false);
     }
   };
+
+  // Polling du statut de paiement
+  useEffect(() => {
+    if (result && result.payment && result.payment.id) {
+      setStatus(result.payment.paymentStatus || null);
+      setIsPolling(true);
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      pollingRef.current = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/payments/nowpayments?payment_id=${result.payment.id}${result.isTest ? '&test=true' : ''}`);
+          const data = await res.json();
+          if (data && data.payment && data.payment.payment_status) {
+            setStatus(data.payment.payment_status);
+            // Arrêter le polling si paiement terminé
+            if (["finished", "confirmed", "failed", "expired", "partially_paid"].includes(data.payment.payment_status)) {
+              setIsPolling(false);
+              if (pollingRef.current) clearInterval(pollingRef.current);
+            }
+          }
+        } catch (e) {
+          // Optionnel: gestion d'erreur
+        }
+      }, 5000);
+      return () => {
+        if (pollingRef.current) clearInterval(pollingRef.current);
+      };
+    }
+  }, [result]);
+
+  // Confetti plein écran à la confirmation
+  useEffect(() => {
+    if ((status === 'finished' || status === 'confirmed') && !hasCelebrated) {
+      confetti({
+        particleCount: 180,
+        spread: 90,
+        origin: { y: 0.6 },
+        zIndex: 9999,
+      });
+      setHasCelebrated(true);
+    }
+    if (status !== 'finished' && status !== 'confirmed') {
+      setHasCelebrated(false);
+    }
+  }, [status, hasCelebrated]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-8">
@@ -101,12 +153,12 @@ export default function TestPaymentPage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Amount
                   </label>
-                  <input
-                    type="number"
+                  <AmountInput
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="10"
+                    onChangeAction={setAmount}
+                    currency={currency}
+                    min={0.1}
+                    max={10000}
                   />
                 </div>
 
@@ -116,7 +168,7 @@ export default function TestPaymentPage() {
                   </label>
                   <CryptoSelector
                     value={currency}
-                    onChange={setCurrency}
+                    onChangeAction={setCurrency}
                   />
                 </div>
 
@@ -188,7 +240,73 @@ export default function TestPaymentPage() {
                       </span>
                     )}
                   </div>
-                  
+                  {/* QR code premium */}
+                  <PaymentQRCode
+                    address={result.payment.payAddress}
+                    amount={result.payment.payAmount}
+                    currency={result.payment.payCurrency}
+                    className="mb-4"
+                  />
+                  {/* Statut temps réel */}
+                  <div className="flex flex-col items-center mb-4">
+                    <AnimatePresence>
+                      {isPolling && (
+                        <motion.div
+                          key="loader"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.18 }}
+                          className="flex items-center gap-2 text-purple-400 text-sm"
+                        >
+                          <svg className="animate-spin w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                          </svg>
+                          Waiting for payment confirmation...
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <AnimatePresence>
+                      {status && !isPolling && ["finished", "confirmed"].includes(status) && (
+                        <motion.div
+                          key="success"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.22 }}
+                          className="flex flex-col items-center gap-2 text-green-400 text-base font-semibold mt-2"
+                        >
+                          <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>Payment confirmed!</span>
+                          <span className="text-white text-lg font-bold mt-2">🎉 Merci pour votre soutien !</span>
+                          <button
+                            className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg shadow transition-all"
+                            onClick={() => window.location.href = '/'}
+                          >
+                            Retour à l'accueil
+                          </button>
+                        </motion.div>
+                      )}
+                      {status && !isPolling && ["failed", "expired"].includes(status) && (
+                        <motion.div
+                          key="fail"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.22 }}
+                          className="flex items-center gap-2 text-red-400 text-base font-semibold mt-2"
+                        >
+                          <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Payment failed or expired
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-300">Payment ID:</span>
