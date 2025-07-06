@@ -51,12 +51,11 @@ export default function LoginPage() {
         email: formData.email,
         password: formData.password,
         redirect: false,
-        callbackUrl: "/profile",
       })
       if (res?.error) {
         setError("Invalid email or password")
       } else if (res?.ok) {
-        window.location.href = res.url || "/profile"
+        window.location.href = "/profile"
       }
     } catch (err) {
       setError("Server error")

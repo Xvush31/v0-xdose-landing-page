@@ -1,11 +1,9 @@
 import NextAuth from "next-auth"
-import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
 import prisma from "@/lib/prisma"
 import { compare } from "bcryptjs"
 
 export const authOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -14,7 +12,10 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("Authorize called with:", credentials?.email)
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials")
           return null
         }
         
@@ -23,22 +24,26 @@ export const authOptions = {
             where: { email: credentials.email } 
           })
           
+          console.log("User found:", !!user)
+          
           if (!user || !user.password) {
+            console.log("User not found or no password")
             return null
           }
           
           const isValid = await compare(credentials.password, user.password)
+          console.log("Password valid:", isValid)
           
           if (!isValid) {
             return null
           }
           
-          // Retourner seulement les champs standard de NextAuth
           return {
             id: user.id,
             email: user.email,
             name: user.name || user.email,
             image: user.image || null,
+            role: user.role,
           }
         } catch (error) {
           console.error("Auth error:", error)
@@ -47,9 +52,7 @@ export const authOptions = {
       },
     }),
   ],
-  pages: {
-    signIn: "/auth/login",
-  },
+  debug: true,
   session: {
     strategy: "jwt" as const,
   },
