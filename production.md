@@ -18,6 +18,9 @@
 - Ajout d'un mode test intelligent (mock/fallback pour dev et QA)
 - Correction des erreurs de devise (CURRENCY_UNAVAILABLE)
 - UI responsive et feedbacks de base sur le flow paiement
+- **Simplification complète du flow d'authentification** : signup/login basique et fonctionnel
+- **Onboarding post-connexion** : page dédiée pour les créateurs après première connexion
+- **Correction NextAuth** : configuration simplifiée, suppression des conflits
 
 ---
 
@@ -223,31 +226,26 @@ Ce document détaille les tâches restantes pour passer l'application en product
 Permettre à tout nouvel utilisateur (créateur ou fan) de s'inscrire, créer son profil et être opérationnel en moins de 2 minutes, sur mobile comme desktop, sans friction.
 
 ## Étapes réalisées
-- [x] Choix créateur/fan visuel et animé (UX premium, feedback immédiat)
-- [x] Formulaire animé selon le choix (apparition/disparition smooth)
-- [x] Inputs profil express : pseudo, photo de profil (upload), bio courte
-- [x] Inputs spécifiques créateur : réseaux sociaux, wallet de paiement (optionnel)
-- [x] Preview du profil en temps réel sous le formulaire
-- [x] Feedback UX moderne, mobile first, différenciation créateur/fan
-- [x] **Champs facultatifs** : pseudo, réseaux sociaux et wallet rendus optionnels
-- [x] **Message informatif** : explication que ces champs peuvent être remplis plus tard
-- [x] **API mise à jour** : support des champs optionnels dans l'inscription
-- [x] **Schéma Prisma** : champ wallet ajouté pour les paiements crypto
+- [x] **Inscription simplifiée** : Formulaire basique avec choix créateur/fan
+- [x] **Connexion simplifiée** : Page login épurée et fonctionnelle
+- [x] **Onboarding post-connexion** : Page dédiée pour les créateurs après première connexion
+- [x] **Redirection automatique** : Les créateurs sans profil complet sont redirigés vers l'onboarding
+- [x] **Formulaire d'onboarding** : Username, bio, réseaux sociaux, wallet (optionnel)
+- [x] **Composant Textarea** : Ajouté pour les descriptions longues
+- [x] **Correction NextAuth** : Configuration simplifiée, suppression des conflits
 
 ## Prochaines étapes
-- [x] **Sauvegarde du profil** : API mise à jour pour gérer les champs optionnels
-- [x] **Flow d'inscription amélioré** : redirection vers login avec message de succès
-- [x] **Correction NextAuth** : compatibilité avec les nouveaux utilisateurs créés
-- [ ] Validation instantanée (pseudo unique, format wallet, etc.)
+- [ ] Validation temps réel (pseudo unique, format wallet, etc.)
 - [ ] Flow guidé post-inscription (checklist, call-to-action, onboarding progressif)
 - [ ] Sauvegarde progressive (draft profil/contenu)
 - [ ] Page paramètres profil pour compléter les informations manquantes
 
 ## Résumé UX
-- L'utilisateur choisit son rôle (créateur/fan) via deux gros boutons animés
-- Il remplit un formulaire express avec preview live de son profil
-- Le flow est 100% responsive, rapide, et engageant
-- L'expérience est différenciée selon le rôle (créateur = plus d'options, fan = ultra-light)
+- L'utilisateur s'inscrit avec un formulaire simple (nom, email, mot de passe, rôle)
+- Il se connecte avec email/mot de passe
+- S'il est créateur et n'a pas de username, il est redirigé vers l'onboarding
+- L'onboarding permet de compléter le profil (username, bio, réseaux sociaux, wallet)
+- L'expérience est 100% responsive, rapide, et engageante
 
 ---
 
