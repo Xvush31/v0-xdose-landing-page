@@ -1,18 +1,12 @@
 import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
-import GoogleProvider from "next-auth/providers/google"
 import prisma from "@/lib/prisma"
 import { compare } from "bcryptjs"
 
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    // Provider Google (optionnel, à configurer si tu veux l'OAuth)
-    // GoogleProvider({
-    //   clientId: process.env.GOOGLE_CLIENT_ID!,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    // }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -20,31 +14,34 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
         
         try {
           const user = await prisma.user.findUnique({ 
-            where: { email: credentials.email }
+            where: { email: credentials.email } 
           })
           
-          if (!user || !user.password) return null
+          if (!user || !user.password) {
+            return null
+          }
           
           const isValid = await compare(credentials.password, user.password)
-          if (!isValid) return null
           
-          // Retourner l'utilisateur avec le format attendu par NextAuth
+          if (!isValid) {
+            return null
+          }
+          
+          // Retourner seulement les champs standard de NextAuth
           return {
             id: user.id,
             email: user.email,
-            name: user.name || user.email.split('@')[0], // Fallback si pas de nom
-            role: user.role,
-            bio: user.bio || null,
+            name: user.name || user.email,
             image: user.image || null,
-            twitter: user.twitter || null,
-            instagram: user.instagram || null,
           }
         } catch (error) {
-          console.error("NextAuth authorize error:", error)
+          console.error("Auth error:", error)
           return null
         }
       },
@@ -52,28 +49,24 @@ export const authOptions = {
   ],
   pages: {
     signIn: "/auth/login",
-    signOut: "/auth/logout",
-    error: "/auth/error",
-    verifyRequest: "/auth/verify-request",
   },
   session: {
     strategy: "jwt" as const,
   },
   callbacks: {
-    async session({ session, token, user }: any) {
-      // Ajoute le rôle à la session
-      if (token) {
-        session.user.role = token.role
-        session.user.id = token.id
-      }
-      return session
-    },
     async jwt({ token, user }: any) {
       if (user) {
-        token.role = user.role
         token.id = user.id
+        token.role = user.role
       }
       return token
+    },
+    async session({ session, token }: any) {
+      if (token) {
+        session.user.id = token.id
+        session.user.role = token.role
+      }
+      return session
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
