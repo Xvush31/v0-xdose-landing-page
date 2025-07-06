@@ -7,6 +7,7 @@ import { Navigation } from "@/components/layout/navigation"
 import { AnimatedButton } from "@/components/ui/animated-button"
 import { VideoPlayer } from "@/components/ui/VideoPlayer"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 type SessionUser = {
   id: string;
@@ -18,6 +19,7 @@ type SessionUser = {
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const user = session?.user as SessionUser | undefined
   const [profile, setProfile] = useState<any>(null)
   const [videos, setVideos] = useState<any[]>([])
@@ -51,6 +53,12 @@ export default function ProfilePage() {
         if (data.user) {
           setProfile(data.user)
           setVideos(data.user.videos || [])
+          
+          // Vérifier si c'est un créateur qui n'a pas encore complété son profil
+          if (user.role === "CREATOR" && !data.user.username) {
+            router.push("/onboarding")
+            return
+          }
         } else {
           setError(typeof data.error === "string" ? data.error : "Error retrieving profile")
         }
@@ -60,7 +68,7 @@ export default function ProfilePage() {
         setError(e instanceof Error ? e.message : "Error retrieving profile")
         setLoading(false)
       })
-  }, [user, status])
+  }, [user, status, router])
 
   useEffect(() => {
     if (profile) {
