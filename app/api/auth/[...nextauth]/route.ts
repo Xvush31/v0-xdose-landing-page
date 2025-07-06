@@ -21,11 +21,32 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } })
-        if (!user || !user.password) return null
-        const isValid = await compare(credentials.password, user.password)
-        if (!isValid) return null
-        return user
+        
+        try {
+          const user = await prisma.user.findUnique({ 
+            where: { email: credentials.email }
+          })
+          
+          if (!user || !user.password) return null
+          
+          const isValid = await compare(credentials.password, user.password)
+          if (!isValid) return null
+          
+          // Retourner l'utilisateur avec le format attendu par NextAuth
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name || user.email.split('@')[0], // Fallback si pas de nom
+            role: user.role,
+            bio: user.bio || null,
+            image: user.image || null,
+            twitter: user.twitter || null,
+            instagram: user.instagram || null,
+          }
+        } catch (error) {
+          console.error("NextAuth authorize error:", error)
+          return null
+        }
       },
     }),
   ],
@@ -34,13 +55,12 @@ export const authOptions = {
     signOut: "/auth/logout",
     error: "/auth/error",
     verifyRequest: "/auth/verify-request",
-    newUser: "/auth/signup",
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
   },
   callbacks: {
-    async session({ session, token, user }) {
+    async session({ session, token, user }: any) {
       // Ajoute le rôle à la session
       if (token) {
         session.user.role = token.role
@@ -48,7 +68,7 @@ export const authOptions = {
       }
       return session
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.role = user.role
         token.id = user.id

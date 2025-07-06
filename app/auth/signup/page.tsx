@@ -10,7 +10,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { signIn } from "next-auth/react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
@@ -89,9 +88,17 @@ export default function SignUpPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
-          username: formData.username,
+          username: profile.username || null, // Username optionnel
           password: formData.password,
           role: userType === "creator" ? "CREATOR" : "VIEWER",
+          // Champs de profil optionnels pour les créateurs
+          ...(userType === "creator" && {
+            bio: profile.bio || null,
+            avatar: profile.avatar || null,
+            twitter: profile.twitter || null,
+            instagram: profile.instagram || null,
+            wallet: profile.wallet || null,
+          }),
         }),
       })
       const data = await res.json()
@@ -100,13 +107,11 @@ export default function SignUpPage() {
         setLoading(false)
         return
       }
-      // Succès : connexion automatique
+      // Succès : redirection vers la page de connexion
       setSuccess(true)
-      await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        callbackUrl: "/profile", // Redirige vers le profil après connexion
-      })
+      setTimeout(() => {
+        router.push("/auth/login?message=Account created successfully! Please sign in with your email and password.")
+      }, 2000)
     } catch (err) {
       setError("Server error")
     } finally {
@@ -298,15 +303,14 @@ export default function SignUpPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
+                      <Label htmlFor="username">Username (optional)</Label>
                       <Input
                         id="username"
                         name="username"
                         type="text"
-                        required
                         value={profile.username}
                         onChange={handleProfileChange}
-                        placeholder="Your unique username"
+                        placeholder="Your unique username (can be set later)"
                         autoComplete="off"
                         className="mb-2"
                       />
@@ -345,24 +349,29 @@ export default function SignUpPage() {
                       />
                       {userType === "creator" && (
                         <>
-                          <Label htmlFor="twitter">Twitter</Label>
+                          <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                            <p className="text-sm text-blue-300">
+                              💡 <strong>Quick setup:</strong> You can fill in your social media and wallet details later in your profile settings. Focus on getting started first!
+                            </p>
+                          </div>
+                          <Label htmlFor="twitter">Twitter (optional)</Label>
                           <Input
                             id="twitter"
                             name="twitter"
                             type="text"
                             value={profile.twitter}
                             onChange={handleProfileChange}
-                            placeholder="@tonpseudo"
+                            placeholder="@yourusername (can be set later)"
                             className="mb-2"
                           />
-                          <Label htmlFor="instagram">Instagram</Label>
+                          <Label htmlFor="instagram">Instagram (optional)</Label>
                           <Input
                             id="instagram"
                             name="instagram"
                             type="text"
                             value={profile.instagram}
                             onChange={handleProfileChange}
-                            placeholder="@tonpseudo"
+                            placeholder="@yourusername (can be set later)"
                             className="mb-2"
                           />
                           <Label htmlFor="wallet">Payout wallet (optional)</Label>
@@ -372,7 +381,7 @@ export default function SignUpPage() {
                             type="text"
                             value={profile.wallet}
                             onChange={handleProfileChange}
-                            placeholder="0x..."
+                            placeholder="0x... (can be set later in settings)"
                             className="mb-2"
                           />
                         </>
@@ -482,7 +491,7 @@ export default function SignUpPage() {
                     )}
                     {success && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-green-500 text-center">
-                        Account created! Redirecting...
+                        ✅ Account created successfully! Redirecting to login...
                       </motion.div>
                     )}
 

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Eye, EyeOff, ArrowLeft, Mail, Lock } from "lucide-react"
 import { AnimatedButton } from "@/components/ui/animated-button"
@@ -21,6 +21,18 @@ export default function LoginPage() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Vérifier s'il y a un message de succès dans l'URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const message = urlParams.get('message')
+    if (message) {
+      setSuccessMessage(message)
+      // Nettoyer l'URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -168,7 +180,12 @@ export default function LoginPage() {
               <p className="text-muted-foreground">Sign in to your Xdose account</p>
             </motion.div>
 
-            {/* Affichage des erreurs */}
+            {/* Affichage des messages */}
+            {successMessage && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-green-500 text-center">
+                ✅ {successMessage}
+              </motion.div>
+            )}
             {error && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-red-500 text-center">
                 {error}

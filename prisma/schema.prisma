@@ -45,6 +45,7 @@ model User {
   website   String?
   twitter   String?
   instagram String?
+  wallet    String? // Adresse wallet pour les paiements crypto
   birthdate DateTime?
   isVerified Boolean @default(false)
   customLinks String[]

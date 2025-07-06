@@ -229,12 +229,19 @@ Permettre à tout nouvel utilisateur (créateur ou fan) de s'inscrire, créer so
 - [x] Inputs spécifiques créateur : réseaux sociaux, wallet de paiement (optionnel)
 - [x] Preview du profil en temps réel sous le formulaire
 - [x] Feedback UX moderne, mobile first, différenciation créateur/fan
+- [x] **Champs facultatifs** : pseudo, réseaux sociaux et wallet rendus optionnels
+- [x] **Message informatif** : explication que ces champs peuvent être remplis plus tard
+- [x] **API mise à jour** : support des champs optionnels dans l'inscription
+- [x] **Schéma Prisma** : champ wallet ajouté pour les paiements crypto
 
 ## Prochaines étapes
-- [ ] Finaliser la sauvegarde du profil (envoi des nouveaux champs à l'API lors de l'inscription)
+- [x] **Sauvegarde du profil** : API mise à jour pour gérer les champs optionnels
+- [x] **Flow d'inscription amélioré** : redirection vers login avec message de succès
+- [x] **Correction NextAuth** : compatibilité avec les nouveaux utilisateurs créés
 - [ ] Validation instantanée (pseudo unique, format wallet, etc.)
 - [ ] Flow guidé post-inscription (checklist, call-to-action, onboarding progressif)
 - [ ] Sauvegarde progressive (draft profil/contenu)
+- [ ] Page paramètres profil pour compléter les informations manquantes
 
 ## Résumé UX
 - L'utilisateur choisit son rôle (créateur/fan) via deux gros boutons animés
