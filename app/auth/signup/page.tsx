@@ -61,25 +61,25 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back Button */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-6">
-          <Link
-            href="/"
-            className="inline-flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft size={16} />
-            <span>Back to Home</span>
-          </Link>
-        </motion.div>
+          {/* Back Button */}
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Home</span>
+            </Link>
+          </motion.div>
 
         <Card className="backdrop-blur-lg bg-card/80 border-border/50 shadow-2xl">
-          <CardContent className="p-8">
+            <CardContent className="p-8">
             {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center mb-8"
-            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center mb-8"
+              >
               <h1 className="text-3xl font-bold mb-2">Create Account</h1>
               <p className="text-muted-foreground">Join Xdose today</p>
             </motion.div>
@@ -94,8 +94,8 @@ export default function SignupPage() {
             <motion.form
               onSubmit={handleSubmit}
               className="space-y-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
               {/* Role Selection */}
@@ -115,7 +115,7 @@ export default function SignupPage() {
                       <div className="text-2xl mb-2">👥</div>
                       <div className="font-medium">Fan</div>
                       <div className="text-xs text-muted-foreground">Support creators</div>
-                    </div>
+                        </div>
                   </button>
                   <button
                     type="button"
@@ -133,69 +133,69 @@ export default function SignupPage() {
                     </div>
                   </button>
                 </div>
-              </div>
+                    </div>
 
               {/* Name Input */}
-              <div className="space-y-2">
+                      <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <div className="relative">
+                        <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                  <Input
+                          <Input
                     id="name"
                     name="name"
                     type="text"
                     placeholder="Your name"
                     value={formData.name}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
+                            onChange={handleInputChange}
+                            className="pl-10"
+                            required
+                          />
+                        </div>
+                      </div>
 
               {/* Email Input */}
-              <div className="space-y-2">
+                      <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <div className="relative">
+                        <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                  <Input
+                          <Input
                     id="email"
                     name="email"
                     type="email"
                     placeholder="your@email.com"
                     value={formData.email}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
+                            onChange={handleInputChange}
+                            className="pl-10"
+                            required
+                          />
+                        </div>
+                      </div>
 
               {/* Password Input */}
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="pl-10 pr-10"
-                    required
+                          <Input
+                            id="password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Create a password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            className="pl-10 pr-10"
+                            required
                     minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
 
               {/* Submit Button */}
               <AnimatedButton
@@ -208,14 +208,14 @@ export default function SignupPage() {
 
               {/* Login Link */}
               <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
+                  Already have an account?{" "}
                 <Link href="/auth/login" className="text-purple-500 hover:text-purple-400 font-medium">
-                  Sign in
-                </Link>
+                    Sign in
+                  </Link>
               </div>
             </motion.form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
       </div>
     </div>
   )

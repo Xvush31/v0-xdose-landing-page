@@ -56,6 +56,7 @@ export default function ProfilePage() {
           
           // Vérifier si c'est un créateur qui n'a pas encore complété son profil
           if (user.role === "CREATOR" && !data.user.username) {
+            console.log('Redirection onboarding: profil incomplet', data.user)
             router.push("/onboarding")
             return
           }
@@ -192,7 +193,7 @@ export default function ProfilePage() {
                     onChange={e => handleFileChange(e, "image")}
                     tabIndex={-1}
                   />
-                </div>
+                    </div>
 
                 {/* Profile Details */}
                 <div className="flex-1">
@@ -218,9 +219,9 @@ export default function ProfilePage() {
                     {/* Action Buttons */}
                     <div className="flex items-center space-x-3">
                       {user?.id !== profile?.id && (
-                        <AnimatedButton variant="primary" size="md">
+                      <AnimatedButton variant="primary" size="md">
                           Subscribe
-                        </AnimatedButton>
+                      </AnimatedButton>
                       )}
                       <motion.button
                         className="p-3 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors"

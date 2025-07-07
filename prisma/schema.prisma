@@ -27,6 +27,7 @@ enum VideoStatus {
 
 model User {
   id        String   @id @default(uuid())
+  username  String?  @unique // Identifiant unique, obligatoire pour les créateurs (rempli à l'onboarding)
   name      String?
   email     String   @unique
   emailVerified DateTime?

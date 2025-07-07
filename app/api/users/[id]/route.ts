@@ -45,7 +45,7 @@ export async function GET(
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: { ...user, username: user.name } });
   } catch (error) {
     return NextResponse.json({ error: "Erreur lors de la récupération du profil utilisateur" }, { status: 500 });
   }
@@ -69,6 +69,7 @@ export async function PATCH(
     const updated = await prisma.user.update({
       where: { id: userId },
       data: {
+        username: data.username,
         name: data.name,
         bio: data.bio,
         image: data.image,

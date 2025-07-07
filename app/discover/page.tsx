@@ -155,24 +155,24 @@ export default function DiscoverPage() {
                       <div className="col-span-2 text-center text-gray-400 py-12">Aucune vidéo disponible</div>
                     ) : (
                       readyVideos.map((video, index) => (
-                        <motion.div
-                          key={video.id}
-                          className="group cursor-pointer"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 + index * 0.1 }}
-                          whileHover={{ y: -5 }}
-                        >
+                      <motion.div
+                        key={video.id}
+                        className="group cursor-pointer"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + index * 0.1 }}
+                        whileHover={{ y: -5 }}
+                      >
                           <div className="relative w-full h-48 group">
                             <VideoPlayer key={video.id} playbackId={video.playbackId} poster={video.thumbnail} className="w-full" />
-                          </div>
-                          <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition-colors text-foreground">
-                            {video.title}
-                          </h3>
-                          <p className="text-muted-foreground text-sm">
+                        </div>
+                        <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition-colors text-foreground">
+                          {video.title}
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
                             {video.user?.name || "Unknown"}
-                          </p>
-                        </motion.div>
+                        </p>
+                      </motion.div>
                       ))
                     )}
                   </div>

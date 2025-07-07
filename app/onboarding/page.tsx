@@ -12,9 +12,18 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 
+type SessionUser = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+};
+
 export default function OnboardingPage() {
   const router = useRouter()
   const { data: session } = useSession()
+  const user = session?.user as SessionUser | undefined
   const [formData, setFormData] = useState({
     username: "",
     bio: "",
@@ -24,14 +33,14 @@ export default function OnboardingPage() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [redirecting, setRedirecting] = useState(false)
 
-  // Rediriger si pas connecté ou pas créateur
-  if (!session) {
+  if (!user) {
     router.push("/auth/login")
     return null
   }
 
-  if (session.user.role !== "CREATOR") {
+  if (user.role !== "CREATOR") {
     router.push("/profile")
     return null
   }
@@ -45,16 +54,24 @@ export default function OnboardingPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
+    setRedirecting(false)
 
     try {
-      const response = await fetch(`/api/users/${session.user.id}`, {
+      const response = await fetch(`/api/users/${user.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          username: formData.username,
+          bio: formData.bio,
+          instagram: formData.instagram,
+          twitter: formData.twitter,
+          wallet: formData.wallet,
+        }),
       })
 
       if (response.ok) {
-        router.push("/profile?message=Profile updated successfully!")
+        setRedirecting(true)
+        window.location.href = "/profile?message=Profile updated successfully!"
       } else {
         const data = await response.json()
         setError(data.error || "Something went wrong")
@@ -67,13 +84,13 @@ export default function OnboardingPage() {
   }
 
   const handleSkip = () => {
-    router.push("/profile")
+    setRedirecting(true)
+    window.location.href = "/profile"
   }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        {/* Back Button */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-6">
           <Link
             href="/profile"
@@ -86,7 +103,6 @@ export default function OnboardingPage() {
 
         <Card className="backdrop-blur-lg bg-card/80 border-border/50 shadow-2xl">
           <CardContent className="p-8">
-            {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -96,7 +112,6 @@ export default function OnboardingPage() {
               <p className="text-muted-foreground">Set up your profile to start earning</p>
             </motion.div>
 
-            {/* Error Message */}
             {error && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-center">
                 {error}
@@ -110,7 +125,6 @@ export default function OnboardingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              {/* Username */}
               <div className="space-y-2">
                 <Label htmlFor="username">Username *</Label>
                 <div className="relative">
@@ -124,12 +138,12 @@ export default function OnboardingPage() {
                     onChange={handleInputChange}
                     className="pl-10"
                     required
+                    disabled={loading || redirecting}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">This will be your unique identifier on the platform</p>
               </div>
 
-              {/* Bio */}
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea
@@ -143,7 +157,6 @@ export default function OnboardingPage() {
                 <p className="text-xs text-muted-foreground">A short description to help fans discover you</p>
               </div>
 
-              {/* Social Media */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="instagram">Instagram</Label>
@@ -178,7 +191,6 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              {/* Wallet */}
               <div className="space-y-2">
                 <Label htmlFor="wallet">Crypto Wallet Address</Label>
                 <div className="relative">
@@ -196,22 +208,21 @@ export default function OnboardingPage() {
                 <p className="text-xs text-muted-foreground">Your wallet address for receiving payments (optional for now)</p>
               </div>
 
-              {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <AnimatedButton
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || redirecting}
                   className="flex-1"
                 >
-                  {loading ? "Saving..." : "Complete Setup"}
+                  {loading ? "Saving..." : redirecting ? "Redirection..." : "Complete Setup"}
                 </AnimatedButton>
-                
                 <button
                   type="button"
                   onClick={handleSkip}
                   className="px-6 py-3 border border-border rounded-lg hover:bg-accent transition-colors text-muted-foreground"
+                  disabled={loading || redirecting}
                 >
-                  Skip for Now
+                  {redirecting ? "Redirection..." : "Skip for Now"}
                 </button>
               </div>
             </motion.form>

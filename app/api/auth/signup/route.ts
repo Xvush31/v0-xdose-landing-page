@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email,
-        name: username || `user_${Date.now()}`, // Username par défaut si non fourni
+        name: username || `user_${Date.now()}`,
         password: hashedPassword,
         role,
         // Champs de profil optionnels
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
         twitter: twitter || null,
         instagram: instagram || null,
         wallet: wallet || null, // Adresse wallet pour les paiements crypto
+        // username: null (sera rempli à l'onboarding)
       }
     })
 

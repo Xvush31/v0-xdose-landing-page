@@ -249,4 +249,54 @@ Permettre à tout nouvel utilisateur (créateur ou fan) de s'inscrire, créer so
 
 ---
 
+# 🚀 Perfectionnement Onboarding & Authentification (Roadmap Premium)
+
+## Objectif
+Atteindre l'excellence UX/UI, sécurité et scalabilité sur tout le flow d'inscription, connexion et onboarding, pour une expérience digne des meilleures plateformes du marché (OnlyFans, Patreon, Substack…)
+
+## Axes d'optimisation priorisés
+
+1. **Validation temps réel & feedback utilisateur**
+   - [ ] Vérification instantanée du pseudo (unicité, format)
+   - [ ] Validation live du format wallet (regex, feedback)
+   - [ ] Feedback inline sous chaque champ (succès/erreur, animations)
+
+2. **Sécurité & conformité**
+   - [ ] Rate limiting sur signup/login (anti-brute-force)
+   - [ ] 2FA pour les créateurs (optionnel, premium)
+   - [ ] Détection d'IP/proxy suspect à l'inscription
+   - [ ] Audit trail des actions critiques (création, modif profil…)
+
+3. **Expérience onboarding**
+   - [ ] Progress bar ou checklist visuelle (profil complété à X%)
+   - [ ] Sauvegarde automatique du draft de profil (localStorage ou backend)
+   - [ ] Onboarding gamifié (confettis, badges, encouragements)
+   - [ ] Preview live du profil pendant la saisie
+
+4. **Accessibilité & internationalisation**
+   - [ ] Support clavier complet, labels ARIA, feedback vocal
+   - [ ] Traduction FR/EN, détection automatique de la langue
+
+5. **Performance & fluidité**
+   - [ ] Optimisation du chargement (lazy loading, transitions animées)
+   - [ ] Loading skeletons, aucune latence perceptible
+
+6. **Scalabilité & future-proof**
+   - [ ] Social login (Google, Twitter, WalletConnect…)
+   - [ ] Gestion avancée des rôles (admin, modérateur, créateur, fan)
+   - [ ] Préparation KYC/AML (intégration provider future)
+
+7. **Documentation & analytics**
+   - [ ] Documentation onboarding/support
+   - [ ] Tracking analytics (taux de complétion, heatmaps, étapes abandonnées)
+
+## Plan d'attaque
+- On traite chaque axe un par un, en priorisant l'impact utilisateur et la robustesse technique.
+- À chaque étape : benchmark, implémentation, tests, documentation, suggestions d'optimisation.
+- On vise la référence, pas juste un concurrent.
+
+➡️ **Prochaine étape** : Validation temps réel du pseudo et du wallet (UX + sécurité)
+
+---
+
 *Ce fichier doit être mis à jour à chaque étape majeure avant le go-live.* 
